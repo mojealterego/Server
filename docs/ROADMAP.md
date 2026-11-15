@@ -1,3 +1,9 @@
+# v4.2 — stan i następne bramki
+
+**Zaimplementowane i poddane testom hosta:** transakcyjne admission deklarowanego RAM pomiędzy zadaniami i planami w jednej bazie SQLite; fenced `fail`; nadzorowany lokalny subprocess z heartbeat, timeout, ograniczonym logiem i CAS. Nie jest to sprzętowe wymuszanie przydziału RAM ani rozproszony lease.
+
+**Następne P0:** test S24 Ultra/Termux dla rzeczywistego `llama-cli` i `llama-server`, profilowanie temperatury i RAM; adaptery stdout dla faktycznych silników; test przerwania zasilania; stany reattach przy restarcie procesu; podpisane capabilities węzłów; ograniczenia procesów przez sandbox/cgroups tam, gdzie platforma wspiera; prywatne mTLS pomiędzy węzłami; test na prawdziwym VPS/GPU.
+
 # OMEGA-X v4.1 checkpointy CAS — status
 
 **Zaimplementowane lokalnie:** prywatny, adresowany SHA-256 magazyn artefaktów,

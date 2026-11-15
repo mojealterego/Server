@@ -1,4 +1,18 @@
-# OMEGA-X v4.1.0 — PHASESHIFT / ATLAS
+# OMEGA-X v4.2.0 — PHASESHIFT / ATLAS / FENCED EXECUTION
+
+
+## v4.2: runtime RAM admission + supervised, fenced execution
+
+- `atlas/phaselease.py`: transakcyjne, międzyworkflowowe przydziały deklarowanego RAM dla węzła w **jednym** pliku SQLite; wersjonowanie schematu z fail-closed dla starych, aktywnych wpisów bez rezerwacji; `fail()` zwalnia pamięć logiczną bez czekania na wygaśnięcie.
+- `atlas/execution.py`: rzeczywisty proces lokalny z `shell=False`, kontrolą deadline, heartbeat w osobnym połączeniu SQLite, odcięciem niepowodzeń, ograniczeniem rozmiaru logu i publikacją SHA-256 do trwałego CAS **tylko po kodzie wyjścia 0 i weryfikacji wyniku**.
+- `tools/phaseexec.py`: CLI operatora, łączący plan, rezerwację, proces i wynik. Szczegóły w `docs/EXECUTION.md`. Proponowane komendy są jawne i zaufane; **nie wykonuj poleceń generowanych przez modele**.
+- Testy regresyjne obejmują równoczesne claim, blokadę przekroczenia RAM, dwa osobne plany, timeout, realny subprocess, CAS, wznowienie i heartbeat.
+
+**Ważne:** jest to warstwa wykonania lokalnego na Linux/Termux, **nie** potwierdzona inferencja na Snapdragonie/GPU, rozproszony system lease ani bezpieczny sandbox. Przydział RAM dotyczy deklarowanych zasobów i nie wymusza limitu fizycznie (cgroups). Zmiennych możliwości urządzenia nie należy mylić z twardymi gwarancjami.
+
+Zgodnie z bieżącym trybem projektu źródła trafiają też do repozytorium `mojealterego/Server` na gałęzi `main`; nie są przenoszone modele ani sekrety.
+
+---
 
 **Nowa warstwa v4:** kontrfaktyczne planowanie N−1, weryfikowalne certyfikaty ograniczeń, propagacja prywatności w DAG, transakcyjne lease SQLite z fencing i sprawdzaniem SHA-256 rzeczywistego pliku wynikowego. Wszystkie komponenty działają lokalnie na Python stdlib, bez API płatnych usług.
 

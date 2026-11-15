@@ -1,3 +1,12 @@
+## v4.2.0 — deklaratywne rezerwacje RAM + nadzorowany wykonawca
+
+- SQLite runtime admission sprawdza sumę aktywnych dzierżaw dla pojedynczego `node_id` w **wspólnym** DB. Wynik kompilacji slotów nie jest już traktowany jako autoryzacja do uruchomienia równoczesnego.
+- Nowe pola `reserved_ram_mb`, `last_error`, tabela `node_registry`; automatyczna migracja bazy v4.1. Aktywne legacy lease bez kolumn rezerwacji blokują admission do wygaśnięcia. Zmiana statycznego kontraktu pojemności wymaga nowego pliku SQLite po wygaśnięciu aktywnych lease.
+- `LeaseStore.fail()` sprawdza epoch/token i zapisuje trwały kod błędu, udostępniając zasób na retry.
+- `SupervisedExecutor` uruchamia **rzeczywisty lokalny** proces bez powłoki, odnawia dzierżawę, ogranicza stdout do prywatnego logu, wymusza timeout i publikuje tylko zweryfikowany plik do CAS.
+- CLI `tools/phaseexec.py` i test pełnego przebiegu. Brak automatycznej migracji węzłów, rzeczywistego cgroup, akceleracji GPU ani uruchamiania niezaufanych poleceń.
+- Uporządkowany `tools/verify.py`: benchmark syntetyczny jest uruchamiany raz, a nie dwukrotnie.
+
 ## v4.1.0 — lokalne trwałe checkpointy
 - Dodano SHA-256 CAS z atomową publikacją, fsync i odtwarzaniem bez nadpisywania.
 - SQLite LeaseStore może wymuszać integralność zależnych wyników przed przydziałem.

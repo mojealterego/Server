@@ -42,7 +42,6 @@ def main():
         shells.append({'path':p.relative_to(ROOT).as_posix(),**check})
     compile_result=command_test([sys.executable,'-m','compileall','-q','termux','vps/media_worker.py','tools','atlas'])
     docker_config=command_test(['docker','compose','-f','vps/compose.yaml','config']) if shutil.which('docker') else {'status':'NOT_RUN','reason':'Docker not installed in this runner'}
-    synthetic_cmd = command_test([sys.executable, 'tools/phasebench.py', '--cases', '200', '--seed', '20261115'])
     try:
         synthetic = json.loads(subprocess.run([sys.executable, 'tools/phasebench.py', '--cases', '200', '--seed', '20261115'],
                          cwd=ROOT, capture_output=True, text=True, timeout=60, check=True).stdout)
@@ -51,9 +50,9 @@ def main():
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         synthetic = {'status':'FAIL','error':str(exc)}
         benchmark_ok = False
-    ok=result.wasSuccessful() and all(x['status']=='PASS' for x in shells) and compile_result['status']=='PASS' and docker_config['status']!='FAIL' and benchmark_ok and synthetic_cmd['status']=='PASS'
+    ok=result.wasSuccessful() and all(x['status']=='PASS' for x in shells) and compile_result['status']=='PASS' and docker_config['status']!='FAIL' and benchmark_ok
     report={
-        'schema':'omega.verification.v4.1','component':'OMEGA-X v4.1.0 PHASESHIFT + ATLAS + CAS',
+        'schema':'omega.verification.v4.2','component':'OMEGA-X v4.2.0 PHASESHIFT + ATLAS + CAS + supervised execution',
         'timestamp_utc':datetime.now(timezone.utc).isoformat(),
         'runner':{'system':platform.system(),'machine':platform.machine(),'python':platform.python_version()},
         'local':{'status':'PASS' if ok else 'FAIL','unittest':{'executed':result.testsRun,
@@ -64,7 +63,7 @@ def main():
         'external_evidence':{'S24_Ultra_device':'NOT_RUN','VPS_Docker_runtime':'NOT_RUN',
                              'GPU_Adreno_OpenCL':'NOT_RUN','Hexagon_NPU':'NOT_RUN',
                              'Wan_LTX_actual_inference':'NOT_RUN','cloud_real_transfer':'NOT_RUN'},
-        'test_limits':'PHASESHIFT certifies only declared resources and restart scenarios. SQLite lease is single-host only. Synthetic benchmark is not GPU/energy/latency evidence. Rclone and sd-cli tests use controlled subprocess doubles. No real S24/VPS/GPU/cloud E2E.'
+        'test_limits':'SupervisedExecutor runs real local subprocesses and CAS writes, but not AI models or a sandbox. Runtime RAM reservation is declarative, single-host SQLite only. PHASESHIFT certifies only declared resources and restart scenarios. SQLite lease is single-host only. Synthetic benchmark is not GPU/energy/latency evidence. Rclone and sd-cli tests use controlled subprocess doubles. No real S24/VPS/GPU/cloud E2E.'
     }
     (REPORTS/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     (REPORTS/'green-mobile.txt').write_text('STATUS=NOT_RUN_ON_S24_ULTRA\nNO_REAL_MOBILE_E2E_EVIDENCE\nLOCAL_SIMULATIONS_IN=verification.json\n',encoding='utf-8')
@@ -72,7 +71,7 @@ def main():
         f"LOCAL_UNIT_TESTS={result.testsRun}\nLOCAL_FAILURES={len(result.failures)+len(result.errors)}\n"
         f"LOCAL_STATUS={'PASS' if ok else 'FAIL'}\nMOBILE_STATUS=NOT_RUN\nVPS_RUNTIME_STATUS=NOT_RUN\n",encoding='utf-8')
     (REPORTS/'red.txt').write_text('LOCAL_FAILURES=%d\n' % (len(result.failures)+len(result.errors)),encoding='utf-8')
-    print(f"OMEGA-X v4.1 host verification: {'PASS' if ok else 'FAIL'}; tests={result.testsRun}; mobile=NOT_RUN; Docker runtime=NOT_RUN")
+    print(f"OMEGA-X v4.2 host verification: {'PASS' if ok else 'FAIL'}; tests={result.testsRun}; mobile=NOT_RUN; Docker runtime=NOT_RUN")
     return 0 if ok else 1
 
 if __name__=='__main__':sys.exit(main())

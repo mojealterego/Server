@@ -5,6 +5,7 @@ execution. A worker must check its epoch before publishing any side effect.
 """
 from __future__ import annotations
 import hashlib
+import copy
 import math
 import os
 from pathlib import Path
@@ -67,10 +68,15 @@ class LeaseStore:
         result = verify_workflow(document, tasks, nodes, catalog)
         if not result['primary_feasible'] or not document['admitted']:
             raise LeaseError('Workflow not admitted; cannot lease')
+        self.document = copy.deepcopy(document)
+        self.task_list = copy.deepcopy(tasks)
+        self.node_list = copy.deepcopy(nodes)
+        self.catalog = copy.deepcopy(catalog)
         self.plan_hash = document['certificate_sha256']
-        self.tasks = {j['id']: j for j in tasks}
+        self.tasks = {j['id']: j for j in self.task_list}
         self.assignments = {j['id']: j for j in document['primary']['assignments']}
         self.artifacts = artifacts
+        self.nodes = {n["id"]: n for n in self.node_list}
         self.path = Path(db_path)
         if not self.path.parent.is_dir() or self.path.parent.is_symlink() or self.path.is_symlink():
             raise LeaseError('Unsafe SQLite database path')
@@ -103,8 +109,35 @@ class LeaseStore:
             node_id TEXT NOT NULL, epoch INTEGER NOT NULL,
             token_hash TEXT NOT NULL, expires_at REAL NOT NULL,
             state TEXT NOT NULL, output_sha256 TEXT,
+            reserved_ram_mb INTEGER, last_error TEXT,
             PRIMARY KEY (plan_hash, task_id)
         )''')
+            self.conn.execute('BEGIN IMMEDIATE')
+            try:
+                columns = {row[1] for row in self.conn.execute('PRAGMA table_info(leases)')}
+                if 'reserved_ram_mb' not in columns:
+                    self.conn.execute('ALTER TABLE leases ADD COLUMN reserved_ram_mb INTEGER')
+                if 'last_error' not in columns:
+                    self.conn.execute('ALTER TABLE leases ADD COLUMN last_error TEXT')
+                self.conn.execute('''CREATE TABLE IF NOT EXISTS node_registry (
+                    node_id TEXT PRIMARY KEY, ram_capacity_mb INTEGER NOT NULL,
+                    disk_free_bytes INTEGER NOT NULL, trust TEXT NOT NULL
+                )''')
+                for node in self.nodes.values():
+                    cap = node['ram_available_mb'] - node['ram_headroom_mb']
+                    observed = self.conn.execute(
+                        'SELECT ram_capacity_mb,disk_free_bytes,trust FROM node_registry WHERE node_id=?',
+                        (node['id'],)).fetchone()
+                    signature = (cap, node['disk_free_bytes'], node['trust'])
+                    if observed is not None and tuple(observed) != signature:
+                        raise LeaseError('Conflicting registered node capacity or trust: '+node['id'])
+                    self.conn.execute('''INSERT OR IGNORE INTO node_registry
+                        (node_id,ram_capacity_mb,disk_free_bytes,trust) VALUES (?,?,?,?)''',
+                        (node['id'],*signature))
+                self.conn.execute('COMMIT')
+            except BaseException:
+                self.conn.execute('ROLLBACK')
+                raise
         except BaseException:
             self.conn.close()
             raise
@@ -122,7 +155,7 @@ class LeaseStore:
         if task_id not in self.tasks:
             raise LeaseError('Unknown task')
         return self.conn.execute('''SELECT node_id,epoch,token_hash,expires_at,state,output_sha256
-                FROM leases WHERE plan_hash=? AND task_id=?''',
+                ,reserved_ram_mb,last_error FROM leases WHERE plan_hash=? AND task_id=?''',
                 (self.plan_hash, task_id)).fetchone()
 
     def _transaction(self, func):
@@ -156,18 +189,34 @@ class LeaseStore:
                     raise LeaseError('Task already completed')
                 if old[4] == 'LEASED' and old[3] > clock:
                     raise LeaseError('Task currently leased')
+            # SQLite BEGIN IMMEDIATE serializes admission across all workflows
+            # sharing this database; scheduling slots are not runtime locks.
+            node_cap = self.conn.execute(
+                'SELECT ram_capacity_mb FROM node_registry WHERE node_id=?',
+                (node_id,)).fetchone()
+            if node_cap is None:
+                raise LeaseError('Node has no registered RAM capacity')
+            rows = self.conn.execute('''SELECT reserved_ram_mb FROM leases
+                WHERE node_id=? AND state='LEASED' AND expires_at>?''',
+                (node_id,clock)).fetchall()
+            if any(row[0] is None for row in rows):
+                raise LeaseError('Unaccounted active legacy lease; runtime RAM admission blocked')
+            reservation = self.tasks[task_id]['ram_mb']
+            if sum(row[0] for row in rows) + reservation > node_cap[0]:
+                raise LeaseError('Runtime RAM reservation exceeds registered node capacity')
             epoch = 1 if old is None else old[1] + 1
             token = secrets.token_urlsafe(32)
             token_hash = hashlib.sha256(token.encode('ascii')).hexdigest()
             until = clock + ttl
             self.conn.execute('''INSERT INTO leases
-                (plan_hash,task_id,node_id,epoch,token_hash,expires_at,state,output_sha256)
-                VALUES (?,?,?,?,?,?,?,NULL)
+                (plan_hash,task_id,node_id,epoch,token_hash,expires_at,state,output_sha256,reserved_ram_mb,last_error)
+                VALUES (?,?,?,?,?,?,?,NULL,?,NULL)
                 ON CONFLICT(plan_hash,task_id) DO UPDATE SET
                 node_id=excluded.node_id,epoch=excluded.epoch,
                 token_hash=excluded.token_hash,expires_at=excluded.expires_at,
-                state=excluded.state,output_sha256=NULL''',
-                (self.plan_hash, task_id, node_id, epoch, token_hash, until, 'LEASED'))
+                state=excluded.state,output_sha256=NULL,
+                reserved_ram_mb=excluded.reserved_ram_mb,last_error=NULL''',
+                (self.plan_hash, task_id, node_id, epoch, token_hash, until, 'LEASED', reservation))
             return {'task': task_id, 'node': node_id, 'epoch': epoch,
                     'token': token, 'expires_at': until, 'state': 'LEASED',
                     'plan_sha256': self.plan_hash}
@@ -196,7 +245,22 @@ class LeaseStore:
             return {'task': task_id, 'epoch': epoch, 'expires_at': until}
         return self._transaction(op)
 
+    def fail(self, task_id, node_id, token, epoch, reason, *, now=None):
+        if reason not in {'PROCESS_FAILED', 'PROCESS_TIMEOUT', 'PROCESS_INTERRUPTED',
+                          'OUTPUT_MISSING', 'OUTPUT_INVALID', 'LEASE_LOST'}:
+            raise LeaseError('Unsupported failure reason')
+        clock = _time(now)
+        def op():
+            self._check_owner(task_id, node_id, token, epoch, clock)
+            self.conn.execute('''UPDATE leases SET state='FAILED',last_error=?,output_sha256=NULL
+                WHERE plan_hash=? AND task_id=?''', (reason,self.plan_hash,task_id))
+            return {'task':task_id,'epoch':epoch,'state':'FAILED','reason':reason}
+        return self._transaction(op)
+
     def complete(self, task_id, node_id, token, epoch, output: Path, *, now=None):
+        # Reject stale owners before potentially expensive CAS publication.
+        clock = _time(now)
+        self._transaction(lambda: self._check_owner(task_id,node_id,token,epoch,clock,completed=True))
         if self.artifacts is not None:
             receipt = self.artifacts.put(Path(output), max_bytes=self.assignments[task_id]['disk_bytes'])
             output_hash, output_size = receipt['sha256'], receipt['size_bytes']
@@ -204,7 +268,7 @@ class LeaseStore:
             output_hash, output_size = _file_sha256(Path(output))
         if output_size > self.assignments[task_id]['disk_bytes']:
             raise LeaseError('Output exceeds planned disk reservation')
-        clock = _time(now)  # clock sampled after potentially lengthy hashing
+        clock = _time(now)  # caller-supplied deterministic clock or post-hash wall time
         def op():
             row = self._check_owner(task_id, node_id, token, epoch, clock, completed=True)
             if row[4] == 'COMPLETED':
@@ -224,4 +288,5 @@ class LeaseStore:
         if row is None:
             return {'task': task_id, 'state': 'PENDING', 'epoch': 0}
         return {'task': task_id, 'node': row[0], 'epoch': row[1],
-                'expires_at': row[3], 'state': row[4], 'output_sha256': row[5]}
+                'expires_at': row[3], 'state': row[4], 'output_sha256': row[5],
+                'reserved_ram_mb': row[6], 'last_error': row[7]}

@@ -66,6 +66,7 @@ test_end_to_end_local_receipt (test_phase_cli.PhaseCLITests.test_end_to_end_loca
 test_rehashed_wrong_failure_node_rejected (test_phase_properties.Properties.test_rehashed_wrong_failure_node_rejected) ... ok
 test_two_hundred_seeded_schedules_all_certificates_check (test_phase_properties.Properties.test_two_hundred_seeded_schedules_all_certificates_check) ... ok
 test_deterministic_synthetic_replay (test_phasebench.PhaseBenchTests.test_deterministic_synthetic_replay) ... ok
+test_cli_runs_real_command_and_persists_to_cas (test_phaseexec_cli.PhaseExecCLITests.test_cli_runs_real_command_and_persists_to_cas) ... ok
 test_claim_and_complete_with_actual_file_hash (test_phaselease.LeaseTests.test_claim_and_complete_with_actual_file_hash) ... ok
 test_concurrent_claims_exactly_one_wins (test_phaselease.LeaseTests.test_concurrent_claims_exactly_one_wins) ... ok
 test_dependency_blocks_claim (test_phaselease.LeaseTests.test_dependency_blocks_claim) ... ok
@@ -97,6 +98,12 @@ test_changed_source_mid_transfer_blocks_completion (test_restore_integration.Res
 test_corruption_remote_file_blocks_restore (test_restore_integration.RestoreRoundTrip.test_corruption_remote_file_blocks_restore) ... ok
 test_missing_receipt_blocks_restore (test_restore_integration.RestoreRoundTrip.test_missing_receipt_blocks_restore) ... ok
 test_two_remote_snapshot_restores_original_data (test_restore_integration.RestoreRoundTrip.test_two_remote_snapshot_restores_original_data) ... ok
+test_concurrent_claims_cannot_exceed_ram (test_runtime_admission.RuntimeAdmissionTests.test_concurrent_claims_cannot_exceed_ram) ... ok
+test_cross_plan_budget_reservation_persists (test_runtime_admission.RuntimeAdmissionTests.test_cross_plan_budget_reservation_persists) ... ok
+test_expired_leases_release_ram (test_runtime_admission.RuntimeAdmissionTests.test_expired_leases_release_ram) ... ok
+test_failure_is_fenced_and_reclaimable (test_runtime_admission.RuntimeAdmissionTests.test_failure_is_fenced_and_reclaimable) ... ok
+test_node_capacity_contract_rejects_mismatch (test_runtime_admission.RuntimeAdmissionTests.test_node_capacity_contract_rejects_mismatch) ... ok
+test_sequential_schedule_does_not_allow_concurrent_ram_overcommit (test_runtime_admission.RuntimeAdmissionTests.test_sequential_schedule_does_not_allow_concurrent_ram_overcommit) ... ok
 test_atomic_publish_never_overwrites (test_snapshot.SnapshotTests.test_atomic_publish_never_overwrites) ... ok
 test_bad_snapshot_id_and_reserved_source_name (test_snapshot.SnapshotTests.test_bad_snapshot_id_and_reserved_source_name) ... ok
 test_duplicate_manifest_paths_rejected (test_snapshot.SnapshotTests.test_duplicate_manifest_paths_rejected) ... ok
@@ -116,6 +123,14 @@ test_sample_onnx_integrity (test_static.DeploymentContractTests.test_sample_onnx
 test_sftp_no_password_or_shell (test_static.DeploymentContractTests.test_sftp_no_password_or_shell) ... ok
 test_shell_syntax (test_static.DeploymentContractTests.test_shell_syntax) ... ok
 test_termux_initialize_no_secret_in_code (test_static.DeploymentContractTests.test_termux_initialize_no_secret_in_code) ... ok
+test_failed_process_releases_lease_and_allows_retry (test_supervised_execution.ExecutionTests.test_failed_process_releases_lease_and_allows_retry) ... ok
+test_heartbeat_prevents_expiry_during_long_running_command (test_supervised_execution.ExecutionTests.test_heartbeat_prevents_expiry_during_long_running_command) ... ok
+test_invalid_command_is_rejected_before_claim (test_supervised_execution.ExecutionTests.test_invalid_command_is_rejected_before_claim) ... ok
+test_missing_output_fails_closed (test_supervised_execution.ExecutionTests.test_missing_output_fails_closed) ... ok
+test_nonzero_command_does_not_publish_partial_output (test_supervised_execution.ExecutionTests.test_nonzero_command_does_not_publish_partial_output) ... ok
+test_stdout_is_bounded_and_treated_as_private (test_supervised_execution.ExecutionTests.test_stdout_is_bounded_and_treated_as_private) ... ok
+test_success_publishes_real_content_in_cas (test_supervised_execution.ExecutionTests.test_success_publishes_real_content_in_cas) ... ok
+test_timeout_terminates_process_and_releases_lease (test_supervised_execution.ExecutionTests.test_timeout_terminates_process_and_releases_lease) ... ok
 test_compute_sync_mutex (test_v1.ArbiterTests.test_compute_sync_mutex) ... ok
 test_offload_does_not_allocate_local_video_ram (test_v1.ArbiterTests.test_offload_does_not_allocate_local_video_ram) ... ok
 test_reject_unknown_ram_and_overcommit (test_v1.ArbiterTests.test_reject_unknown_ram_and_overcommit) ... ok
@@ -144,6 +159,6 @@ test_reject_unexpected_job_command_fields (test_v2.V2WorkerTests.test_reject_une
 test_success_artifact_staged_then_published (test_v2.V2WorkerTests.test_success_artifact_staged_then_published) ... ok
 
 ----------------------------------------------------------------------
-Ran 144 tests in 61.695s
+Ran 159 tests in 71.806s
 
 OK
