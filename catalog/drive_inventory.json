@@ -1,0 +1,184 @@
+{
+  "schema": "omega.atlas.drive_inventory.v1",
+  "folder": "https://drive.google.com/drive/folders/1koakB2K6XmRLZmI4J2lmPnfYGEzaC7Ki",
+  "item_count": 44,
+  "note": "Metadata only; binary headers, SHA-256, license and compatibility NOT verified",
+  "items": [
+    {
+      "name": "xor-neural.onnx",
+      "size_bytes": 1993
+    },
+    {
+      "name": "wan_1.3B_exp_e14.safetensors",
+      "size_bytes": 2838077328
+    },
+    {
+      "name": "xor-neural-1.onnx",
+      "size_bytes": 1993
+    },
+    {
+      "name": "vkd3d-proton-master.zip",
+      "size_bytes": 20967667
+    },
+    {
+      "name": "tokenizer_config.json",
+      "size_bytes": 62215
+    },
+    {
+      "name": "tokenizer.json",
+      "size_bytes": 16853013
+    },
+    {
+      "name": "spiece.model",
+      "size_bytes": 4548313
+    },
+    {
+      "name": "ONNX_Digits_Trained_Ready_v1.0.0.zip",
+      "size_bytes": 149638
+    },
+    {
+      "name": "ONNX_OMEGA_Real_Trained_v3.0.0.zip",
+      "size_bytes": 782151
+    },
+    {
+      "name": "ONNX_CNN_Real_Trained_Model_v2.0.0.zip",
+      "size_bytes": 184445
+    },
+    {
+      "name": "OMEGA_TASK_V2_VERIFIED_PACKAGE.zip",
+      "size_bytes": 173334
+    },
+    {
+      "name": "OMEGA_TASK_MODEL_REAL_TASK.zip",
+      "size_bytes": 79665
+    },
+    {
+      "name": "omega_support_policy.task",
+      "size_bytes": 8500
+    },
+    {
+      "name": "omega_support_policy_v2.task",
+      "size_bytes": 39880
+    },
+    {
+      "name": "OMEGA_ONNX_Checker_Neural_v1.zip",
+      "size_bytes": 15761
+    },
+    {
+      "name": "moons-residual.onnx",
+      "size_bytes": 35233
+    },
+    {
+      "name": "models-main.zip",
+      "size_bytes": 16737543
+    },
+    {
+      "name": "mmproj-F16.gguf",
+      "size_bytes": 819395168
+    },
+    {
+      "name": "LearnVulkan-master.zip",
+      "size_bytes": 18307589
+    },
+    {
+      "name": "Huihui-Qwen3-VL-2B-Instruct-abliterated-Q4_K_M.gguf",
+      "size_bytes": 1107410528
+    },
+    {
+      "name": "gr4_v121.zip",
+      "size_bytes": 34697047
+    },
+    {
+      "name": "face_landmarker.task",
+      "size_bytes": 3758596
+    },
+    {
+      "name": "digits_omega_ensemble.onnx",
+      "size_bytes": 462954
+    },
+    {
+      "name": "digits_omega_edge.onnx",
+      "size_bytes": 154340
+    },
+    {
+      "name": "digits_cnn_trained.onnx",
+      "size_bytes": 154340
+    },
+    {
+      "name": "checker.R",
+      "size_bytes": 5312
+    },
+    {
+      "name": "checker-1.R",
+      "size_bytes": 5312
+    },
+    {
+      "name": "AmateurSlider-KREA2_v1.safetensors",
+      "size_bytes": 6696848
+    },
+    {
+      "name": "gitattributes (1).txt",
+      "size_bytes": 1519
+    },
+    {
+      "name": "uncensoredWan22Remix_v10.zip",
+      "size_bytes": 8169
+    },
+    {
+      "name": "llama-b12192-bin-android-arm64.tar.gz",
+      "size_bytes": 78056439
+    },
+    {
+      "name": "llama-b12192-bin-android-arm64-snapdragon.tar.gz",
+      "size_bytes": 64510997
+    },
+    {
+      "name": "llama-b12191-bin-android-arm64.tar.gz",
+      "size_bytes": 78050180
+    },
+    {
+      "name": "llama-b12191-bin-android-arm64-snapdragon.tar.gz",
+      "size_bytes": 64495054
+    },
+    {
+      "name": "mmproj-F16.gguf",
+      "size_bytes": 819395168
+    },
+    {
+      "name": "ltx-2.3-22b-distilled-Q2_K.gguf",
+      "size_bytes": 8275987488
+    },
+    {
+      "name": "Huihui-Qwen3-VL-2B-Instruct-abliterated-Q4_K_M.gguf",
+      "size_bytes": 1107410528
+    },
+    {
+      "name": "qwen_3_vl_8b_instruct_i8x.ckpt",
+      "size_bytes": 8778221824
+    },
+    {
+      "name": "qwen_image_vae_f16.ckpt",
+      "size_bytes": 254500864
+    },
+    {
+      "name": "qwen_image_vae_f16.ckpt · JoyFusionAI_dt-components at bba1769.mht",
+      "size_bytes": 1205213
+    },
+    {
+      "name": "ltx_2.3_audio_video_vae_f16.ckpt",
+      "size_bytes": 1820950528
+    },
+    {
+      "name": "flux-2-klein-4b-Q4_0.gguf",
+      "size_bytes": 2460378560
+    },
+    {
+      "name": "ltx-2.3-spatial-upscaler-x1.5-1.0.safetensors",
+      "size_bytes": 1090125794
+    },
+    {
+      "name": "ltx_2.3_spatial_upscaler_x2_1.1_f16.ckpt",
+      "size_bytes": 998080512
+    }
+  ]
+}

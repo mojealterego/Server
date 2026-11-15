@@ -1,0 +1,106 @@
+{
+  "qwen-vl-2b": {
+    "filename": "Huihui-Qwen3-VL-2B-Instruct-abliterated-Q4_K_M.gguf",
+    "bytes": 1107410528,
+    "format": "gguf",
+    "role": "vlm",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "qwen-mmproj": {
+    "filename": "mmproj-F16.gguf",
+    "bytes": 819395168,
+    "format": "gguf",
+    "role": "projector",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "ltx23-22b": {
+    "filename": "ltx-2.3-22b-distilled-Q2_K.gguf",
+    "bytes": 8275987488,
+    "format": "gguf",
+    "role": "video_dit",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "ltx23-vae": {
+    "filename": "ltx_2.3_audio_video_vae_f16.ckpt",
+    "bytes": 1820950528,
+    "format": "ckpt",
+    "role": "video_vae",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "wan13b": {
+    "filename": "wan_1.3B_exp_e14.safetensors",
+    "bytes": 2838077328,
+    "format": "safetensors",
+    "role": "video_dit",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "flux2-klein4b": {
+    "filename": "flux-2-klein-4b-Q4_0.gguf",
+    "bytes": 2460378560,
+    "format": "gguf",
+    "role": "image_dit",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "qwen-vl8b-qnn": {
+    "filename": "qwen_3_vl_8b_instruct_i8x.ckpt",
+    "bytes": 8778221824,
+    "format": "ckpt",
+    "role": "vlm",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "qwen-image-vae": {
+    "filename": "qwen_image_vae_f16.ckpt",
+    "bytes": 254500864,
+    "format": "ckpt",
+    "role": "image_vae",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "ltx-upscale-x15": {
+    "filename": "ltx-2.3-spatial-upscaler-x1.5-1.0.safetensors",
+    "bytes": 1090125794,
+    "format": "safetensors",
+    "role": "video_upscaler",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "ltx-upscale-x2": {
+    "filename": "ltx_2.3_spatial_upscaler_x2_1.1_f16.ckpt",
+    "bytes": 998080512,
+    "format": "ckpt",
+    "role": "video_upscaler",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "face-landmarker": {
+    "filename": "face_landmarker.task",
+    "bytes": 3758596,
+    "format": "task",
+    "role": "vision_landmarker",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "digits-ensemble": {
+    "filename": "digits_omega_ensemble.onnx",
+    "bytes": 462954,
+    "format": "onnx",
+    "role": "classifier",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  },
+  "xor-neural": {
+    "filename": "xor-neural.onnx",
+    "bytes": 1993,
+    "format": "onnx",
+    "role": "classifier",
+    "lineage_verified": false,
+    "source": "Google Drive metadata, 2026-11-15"
+  }
+}

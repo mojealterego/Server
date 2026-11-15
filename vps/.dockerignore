@@ -1,0 +1,8 @@
+secrets
+data
+models
+engine
+.env
+.git
+__pycache__
+*.pyc

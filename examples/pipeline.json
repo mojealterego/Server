@@ -1,0 +1,11 @@
+[
+  {
+    "id": "photo-analysis", "engine": "llama", "models": ["qwen-vl-2b", "qwen-mmproj"],
+    "ram_mb": 4096, "privacy": "local_only", "requires_verified_lineage": true
+  },
+  {
+    "id": "video-generation", "engine": "sd-cli", "models": ["ltx23-22b", "ltx23-vae"],
+    "ram_mb": 24576, "privacy": "trusted_only", "depends_on": ["photo-analysis"],
+    "requires_verified_lineage": true
+  }
+]

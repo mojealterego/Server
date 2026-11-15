@@ -1,0 +1,113 @@
+{
+  "schema": "omega.verification.v4.1",
+  "component": "OMEGA-X v4.1.0 PHASESHIFT + ATLAS + CAS",
+  "timestamp_utc": "2026-11-15T14:31:14.939330+00:00",
+  "runner": {
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.13.5"
+  },
+  "local": {
+    "status": "PASS",
+    "unittest": {
+      "executed": 144,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "shell_syntax": [
+      {
+        "path": "cloud/backup.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "cloud/make_union.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "cloud/restore.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "termux/benchmark_cpu.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "termux/build_llama.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "termux/device_smoke.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "termux/install-termux.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "vps/ftps/entrypoint.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "vps/init.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "path": "vps/sftp/entrypoint.sh",
+        "status": "PASS",
+        "exit_code": 0,
+        "stderr": ""
+      }
+    ],
+    "python_compile": {
+      "status": "PASS",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    "synthetic_benchmark": {
+      "admitted": 163,
+      "blocked": 37,
+      "cases": 200,
+      "comparator": "naive immediate concurrent placement on first node (not ATLAS v3 scheduler)",
+      "indeterminate": 0,
+      "measurement": "in-memory simulated declarations; no real throughput, energy or transfer",
+      "naive_overcommit_cases": 164,
+      "primary_feasible": 163,
+      "resilient": 73,
+      "schema": "omega.phaseshift.synthetic.v1",
+      "seed": 20261115,
+      "verified_certificates": 200
+    },
+    "docker_compose_config": {
+      "status": "NOT_RUN",
+      "reason": "Docker not installed in this runner"
+    }
+  },
+  "external_evidence": {
+    "S24_Ultra_device": "NOT_RUN",
+    "VPS_Docker_runtime": "NOT_RUN",
+    "GPU_Adreno_OpenCL": "NOT_RUN",
+    "Hexagon_NPU": "NOT_RUN",
+    "Wan_LTX_actual_inference": "NOT_RUN",
+    "cloud_real_transfer": "NOT_RUN"
+  },
+  "test_limits": "PHASESHIFT certifies only declared resources and restart scenarios. SQLite lease is single-host only. Synthetic benchmark is not GPU/energy/latency evidence. Rclone and sd-cli tests use controlled subprocess doubles. No real S24/VPS/GPU/cloud E2E."
+}

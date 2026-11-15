@@ -1,0 +1,33 @@
+Include /etc/proftpd/modules.conf
+ServerName "OMEGA Hardened FTPS"
+ServerType standalone
+DefaultServer on
+UseIPv6 off
+Port 2121
+PassivePorts 50000 50015
+MasqueradeAddress ${FTPS_PUBLIC_HOST}
+MaxInstances 48
+MaxClients 32
+TimeoutLogin 60
+TimeoutIdle 600
+TimeoutNoTransfer 300
+TimeoutStalled 300
+UseReverseDNS off
+IdentLookups off
+RequireValidShell off
+RootLogin off
+DefaultRoot ~
+AllowOverwrite on
+Umask 027 027
+User proftpd
+Group nogroup
+SystemLog /dev/stderr
+TransferLog /dev/stdout
+<IfModule mod_tls.c>
+  TLSEngine on
+  TLSRequired on
+  TLSProtocol TLSv1.2 TLSv1.3
+  TLSRSACertificateFile /run/omega/tls.crt
+  TLSRSACertificateKeyFile /run/omega/tls.key
+  TLSVerifyClient off
+</IfModule>

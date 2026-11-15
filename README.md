@@ -1,58 +1,170 @@
-# OMEGA-X Server — PHASESHIFT / ATLAS
+# OMEGA-X v4.1.0 — PHASESHIFT / ATLAS
 
-Repozytorium docelowe projektu **OMEGA-X v4.0.0 PHASESHIFT + ATLAS**.
+**Nowa warstwa v4:** kontrfaktyczne planowanie N−1, weryfikowalne certyfikaty ograniczeń, propagacja prywatności w DAG, transakcyjne lease SQLite z fencing i sprawdzaniem SHA-256 rzeczywistego pliku wynikowego. Wszystkie komponenty działają lokalnie na Python stdlib, bez API płatnych usług.
 
-## Źródło projektu
-
-- Archiwum bazowe: `OMEGA_STORAGE_AI_v4.0.0.zip`
-- SHA-256 archiwum: `c45d249ee11ca6103d970942f943634842779bd8e2bc81d3db9fb3e735be87d8`
-- Zawartość archiwum: 90 plików projektu + manifest wejściowy.
-- Sposób weryfikacji: CRC ZIP, kontrola SHA256SUMS oraz testy `python3 -m unittest discover -s tests -q`.
-
-**Stan repozytorium:** etap inicjalizacji importu. Sam ten commit NIE oznacza pełnego przeniesienia źródeł ani potwierdzenia wykonania na Androidzie, VPS lub GPU.
-
-## Zakres technologii
-
-- `atlas/`: ATLAS (Merkle staging, placement, audit) i PHASESHIFT (harmonogramowanie N−1, weryfikacja, lokalne lease/fencing).
-- `termux/`: serwery SFTP/WebDAV, inwentaryzacja GGUF/Safetensors, zabezpieczenie zasobów.
-- `vps/`: kontenery SFTP/FTPS i opcjonalny worker generacji.
-- `cloud/`: snapshot, backup i odtwarzanie.
-- `tests/`, `tools/`, `docs/`: testy, narzędzia, dokumentacja.
-
-## Zasady bezpieczeństwa
-
-- Nie commituj modeli GGUF/Safetensors, danych użytkownika, kluczy, tokenów ani folderów `vps/secrets/` i `vps/data/`.
-- Zapisuj na gałęzi `main`, bez wymuszania historii.
-- `READY` w planerze nie oznacza potwierdzonej inferencji.
-- Testy syntetyczne nie dowodzą wydajności ani zgodności sprzętowej Samsung Galaxy S24 Ultra.
-
-## Przygotowanie kopii lokalnej
-
-Pełna paczka źródłowa jest oddzielnym artefaktem wersji 4.0.0. Po pobraniu archiwum:
+- `atlas/phaseshift.py`: ograniczony solver harmonogramu i planów N−1.
+- `atlas/phaseverify.py`: niezależna weryfikacja RAM/dysk/DAG/prywatność/scenariusze.
+- `atlas/phaselease.py`: lokalne, trwałe tokeny fencing (nie rozproszony lock).
+- `tools/phasectl.py`: compile / verify / claim / renew / complete / status.
+- `tools/phasebench.py`: powtarzalny benchmark **syntetyczny**, nie sprzętowy.
+- `docs/PHASESHIFT_RESEARCH.md` oraz `docs/PHASESHIFT_RUNBOOK.md`: teoria, falsyfikacja i komendy.
 
 ```bash
-unzip -q OMEGA_STORAGE_AI_v4.0.0.zip
-cd OMEGA_STORAGE_AI_v4.0.0
-python3 -m unittest discover -s tests -q
+python3 tools/phasectl.py --help
+python3 tools/phasebench.py --cases 200
+bash tools/verify.sh
 ```
 
-Repozytorium jest **publiczne**. Nie przesyłaj prywatnej telemetrii, sekretów ani niezweryfikowanych plików z Google Drive.
+**Status:** działająca, testowana lokalnie warstwa planowania i lokalnego admission; bez dowodu inferencji S24/VPS, bez automatycznej migracji GPU, bez sprzętowego testu modeli z Drive. Nie ma potwierdzenia pierwszeństwa światowego ani przełomu rynkowego. Starsze funkcje v3 pozostają w paczce.
 
-## Import kompletnych źródeł (z lokalnej paczki v4)
+---
 
-Repozytorium zostało zainicjalizowane, a podstawowa dokumentacja i zweryfikowany skrypt importu są dostępne na `main`. **Pełne 91 plików źródłowych nie zostało jeszcze opublikowanych w GitHubie.** Do importu potrzebne jest źródłowe archiwum `OMEGA_STORAGE_AI_v4.0.0.zip`.
+# OMEGA-X v3.0.0 — ATLAS: Adaptive Tensor Logistics & Autonomous Scheduling
 
-Na urządzeniu z Pythonem 3.10+ i Gitem (np. Termux), po pobraniu archiwum z rozmowy:
+**Rozszerzenie v2.0.0 o rzeczywistą warstwę zarządzania modelami, zasobami i dowodami.** Archiwum package-only, bez modyfikacji GitHub i bez kopiowania wag z Google Drive.
+
+## Nowe komponenty v3.0.0
+
+- `atlas/merkle.py` + `atlas/remote.py` — strumieniowe hashowanie, blokowy staging, wznowienie pobierania brakujących fragmentów z Rclone oraz atomowa publikacja bez nadpisania.
+- `atlas/planner.py` — deterministyczny placement z ochroną prywatności, RAM, temperaturą, lokalnością modeli i zależnościami DAG.
+- `atlas/audit.py` — łańcuch rekordów HMAC-SHA256, integralność wyniku, haszowanie prywatnego promptu i kontrola zewnętrznego zakotwiczenia głowy logu.
+- `atlas/runner.py` — rzeczywisty klient lokalnego llama-server: wyłącznie loopback, bez przekierowań i proxy, z audytem wyniku.
+- `tools/atlasctl.py` — działające CLI; `catalog/` — 44 metadane Google Drive i 13 modeli priorytetowych.
+- `docs/ATLAS_RUNBOOK.md` — konkretne komendy; `docs/ATLAS_RESEARCH.md` — hipoteza, kryteria falsyfikacji i ograniczenia.
+
+**Uruchomienie i weryfikacja:**
 
 ```bash
-pkg install -y python git
-git clone https://github.com/mojealterego/Server.git
-cd Server
-python3 scripts/import_bundle.py \
-  --archive "$HOME/storage/downloads/OMEGA_STORAGE_AI_v4.0.0.zip" \
-  --repo . --commit --push
+python3 tools/atlasctl.py --help
+python3 tools/atlasctl.py plan --tasks examples/pipeline.json --nodes examples/nodes.json
+bash tools/verify.sh
+python3 tools/package.py
 ```
 
-Skrypt sprawdza SHA-256 archiwum, CRC, 90 sum źródeł, listę dozwolonych ścieżek, czystość drzewa Git oraz gałąź `main`. Nie usuwa istniejących plików, nie wykonuje `push --force` i nie publikuje modeli. Wymaga działających poświadczeń GitHub do `git push`.
+**Ważne:** `READY` w plannerze nie oznacza wykonanej inferencji. Nie twierdzimy, że technologia jest pierwsza na świecie, że istnieje zdalne mmap ani że Snapdragon NPU został uruchomiony. Połączone funkcje to zweryfikowana lokalnie implementacja badawcza, nie gotowy produkt rynkowy.
 
-**Uwaga dla audytu:** poprzedni raport `reports/verification.json` jest historycznym artefaktem testów v4, a nie dowodem wykonania testów na bieżącym sprzęcie.
+## Dotychczasowy stos v2.0.0 (zachowany)
+
+### Secure Mobile Storage & AI Fabric
+
+**Wersja źródłowa, package-only.** Dwa serwery (Samsung Galaxy S24 Ultra / Linux VPS), dwa poziomy pamięci masowej (telefon i niezależne szyfrowane magazyny), lokalna inferencja GGUF i opcjonalny worker Wan/LTX. Wszystkie polecenia dotyczą **własnej** infrastruktury. Bez zmian w repozytoriach GitHub. W paczce nie ma modeli, kont chmurowych, sekretów, binariów GPU ani APK.
+
+## Nowości v2.0.0 wobec v1.0.0
+
+1. **Prawdziwa integralność backupów**: streaming SHA-256 każdego pliku, dwie niezależne kopie na rclone crypt (jeżeli skonfigurowane), HMAC-SHA256 manifestu z lokalnym kluczem, znacznik zatwierdzenia publikowany jako ostatni, odtwarzanie do nowego katalogu przez atomowe `renameat2(RENAME_NOREPLACE)` na Linuksie.
+2. **Bezpieczny parser Safetensors**: walidacja dtype, kształtów, rozmiarów, nakładania się i dziur w zakresach tensorów; GGUF v2/v3 czytany bez ładowania wag; projektor `mmproj` nadal wymaga weryfikacji pochodzenia.
+3. **Naprawiony worker wideo**: `sd-cli --mode vid_gen`, wynik `.avi` zamiast nieobsługiwanego z założenia `.mp4`, staging i publikacja dopiero po weryfikacji; stan `COMPLETED` w profilu `media` wymaga pozytywnego `ffprobe`. Idempotencja poprzez trwały plik rezerwujący ID oraz limit 64 oczekujących zadań.
+4. **Bezpieczny transport zleceń**: `termux/offload.py` przesyła JSON do kolejek VPS przez Rclone SFTP z wymaganym przypiętym kluczem hosta. Nie przenosi automatycznie wag modeli.
+5. **Audyt runtime**: `tools/doctor.py` raportuje brakujące binaria, katalog modeli, miejsce, CPU affinity, RAM i porty bez twierdzenia, że testuje połączenia E2E.
+6. **Pakowanie allowlist**: tylko zatwierdzone ścieżki źródeł i raportów, bez kluczy i magazynów danych. `SHA256SUMS` i weryfikacja ZIP.
+
+## I. Termux na Samsungu Galaxy S24 Ultra (bez roota)
+
+1. Pobierz ZIP i skopiuj do systemowego Android `Download`.
+2. W Termuksie:
+
+```bash
+pkg update && pkg upgrade -y
+pkg install -y python unzip
+termux-setup-storage
+cp "$HOME/storage/downloads/OMEGA_STORAGE_AI_v2.0.0.zip" "$HOME/"
+cd "$HOME"
+unzip -o OMEGA_STORAGE_AI_v2.0.0.zip
+cd OMEGA_STORAGE_AI_v2.0.0
+bash termux/install-termux.sh
+```
+
+3. Uruchom **diagnostykę bez zmian systemowych** i inwentaryzację modeli:
+
+```bash
+export OMEGA_MODEL_DIR="$HOME/storage/shared/1.GGUF-UNCENSORED"
+python3 tools/doctor.py --model-dir "$OMEGA_MODEL_DIR" --json-out "$HOME/.omega-x/doctor.json"
+python3 termux/model_inventory.py --dir "$OMEGA_MODEL_DIR" --json-out "$HOME/.omega-x/models.json"
+# UWAGA: następne polecenie odczyta wszystkie wagi, może trwać długo
+python3 termux/model_inventory.py --dir "$OMEGA_MODEL_DIR" --sha256 --write-manifest "$HOME/omega-models.sha256"
+```
+
+4. Uruchom bezpieczne serwery plików na loopback:
+
+```bash
+python3 termux/omega_node.py run
+```
+
+W nowej sesji: `python3 termux/omega_node.py status`. Port SFTP `127.0.0.1:2022`, WebDAV `127.0.0.1:8081`. **Nawiązanie TCP nie jest testem uwierzytelnienia.** Opcjonalnie wystaw SFTP tylko na dokładny prywatny IPv4: `python3 termux/omega_node.py run --sftp-bind 192.168.1.50 --allow-lan` (zastąp własnym adresem, chroń firewallem/VPN). Bind `0.0.0.0` jest odrzucany.
+
+5. Opcjonalny model językowy (nie LTX/Wan):
+
+```bash
+bash termux/build_llama.sh
+# Po weryfikacji nagłówka i wersji konkretnego modelu:
+MODEL='/pełna/ścieżka/do/Huihui-Qwen*.gguf'  # ZASTĄP dosłowną, poprawną ścieżką (bez gwiazdki)
+python3 termux/omega_node.py run --model "$MODEL" --threads 4 --context 2048
+```
+
+Uruchamiaj **jednego** supervisora naraz. `--mmproj` tylko po potwierdzeniu zgodności pochodzenia. Mapowanie pamięci (`mmap`) przez Android Scoped Storage może różnić się od natywnego UFS; nie zakładaj gwarantowanego „zero-copy”.
+
+Pełny przewodnik: `docs/ANDROID_RUNBOOK.md`.
+
+## II. VPS (Linux / Docker Compose)
+
+```bash
+cd OMEGA_STORAGE_AI_v2.0.0
+mkdir -p vps/secrets vps/data
+cp ~/.ssh/id_ed25519.pub vps/secrets/authorized_keys
+sudo chown -R 10001:10001 vps/data
+bash vps/init.sh --self-signed-lab   # WYŁĄCZNIE lab lokalny
+cd vps
+docker compose config
+docker compose up -d --build
+docker compose ps
+```
+
+Domyślnie FTPS `127.0.0.1:2121`, SFTP `127.0.0.1:2222`, PASV `50000–50015`. Nie istnieje gotowy „darmowy VPS GPU” do LTX/Wan: potrzebna jest faktyczna zgodna maszyna, wagi i `sd-cli`. Worker profilu `media` pozostaje wyłączony do jawnego włączenia i konfiguracji. `docs/VPS_RUNBOOK.md`.
+
+## III. Dwa zaszyfrowane magazyny, kopia, odtwarzanie
+
+Skonfiguruj w `rclone config` **minimum dwa faktycznie niezależne** remotes `crypt` (np. `crypt1:` i `crypt2:`), gdzie każdy `crypt` ma osobny dostawcę lub niezależny obszar awarii. Następnie:
+
+```bash
+# Opcjonalny łączny widok (to nie jest proof backupu)
+bash cloud/make_union.sh omega-mirror crypt1:models crypt2:models
+
+# Migawki bez nadpisywania, weryfikacja pobranych bajtów i HMAC
+bash cloud/backup.sh "$HOME/storage/shared/1.GGUF-UNCENSORED" crypt1:snapshots crypt2:snapshots
+
+# Odtwarzanie wymaga klucza $HOME/.omega-x/manifest-hmac.key,
+# nowej, NIEISTNIEJĄCEJ ścieżki i identyfikatora wypisanego przez backup.
+bash cloud/restore.sh crypt1:snapshots/IDENTYFIKATOR_MIGAWKI "$HOME/omega-restore"
+```
+
+**Krytyczne**: `manifest-hmac.key` przechowuj w bezpiecznej kopii **poza magazynami**, które podpisuje, i nigdy nie umieszczaj go w repozytorium/ZIP. Bez niego odtworzenie z uwierzytelnieniem zostanie odrzucone. Nie traktuj dwóch nazw Rclone jako dowodu niezależności dostawców. `docs/CLOUD_RUNBOOK.md`.
+
+## IV. Kolejka generacji wideo na VPS
+
+Lokalny JSON zadania (patrz `docs/VPS_RUNBOOK.md`) wyślij z Termuksa do **przypiętego SSH**:
+
+```bash
+python3 termux/offload.py job.json --remote vps-sftp:queue/pending
+```
+
+`vps-sftp` to **Twoja** ręcznie skonfigurowana nazwa w `rclone config` z `host_keys` lub `known_hosts_file`. Serwer VPS musi już posiadać właściwe binaria i **zgodne z silnikiem** wagi w `vps/models`. Worker odrzuca zlecenia niezgodne ze schematem, utrwala historię identyfikatorów i zapisuje statusy w `data/queue/outputs/*.status.json`. Nie twierdzimy, że modele z fotografii są już kompletnym pakietem zgodnym z Wan/LTX.
+
+## V. Dowody i status
+
+```bash
+bash tools/verify.sh
+python3 tools/package.py
+# po tym: archiwum obok katalogu projektu
+```
+
+`reports/verification.json` dokumentuje testy wykonane na hoście (w tym testy symulowanego Rclone i `sd-cli`) i osobne `NOT_RUN` dla S24 Ultra, Docker, GPU/NPU, rzeczywistego Wan/LTX i transferu do chmur. `reports/green-mobile.txt` pozostaje świadomie **NOT_RUN_ON_S24_ULTRA**. Brak fikcyjnego TTFT, GB/s, 8K lub gwarancji 24/7. Testy sprzętowe `termux/device_smoke.sh` wykonaj osobiście na telefonie, dopiero po uruchomieniu serwera i zaakceptowaniu odcisku SSH.
+
+**Dokumenty:** `docs/ARCHITECTURE.md`, `docs/THREAT_MODEL.md`, `docs/PERFORMANCE.md`, `docs/SECURITY.md`, `docs/CHANGELOG.md`, `docs/ROADMAP.md`, `docs/VERIFICATION.md`.
+
+
+## v4.1: checkpointy CAS
+
+Nowy magazyn `atlas/artifacts.py` zapisuje wyniki pod SHA-256 i sprawdza
+ich integralność przed uruchomieniem zależnych etapów.
+`tools/casctl.py` zapewnia `put`, `verify`, `restore` bez nadpisania danych.
+Szczegóły: `docs/RELIABLE_CHECKPOINTS.md`; nie jest to rozproszony CAS.

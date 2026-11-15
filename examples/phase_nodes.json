@@ -1,0 +1,4 @@
+[
+  {"id":"vps-a","trust":"trusted","capabilities":["llama"],"models":["synthetic-model"],"ram_available_mb":1200,"ram_headroom_mb":100,"disk_free_bytes":1000,"thermal_c":32,"priority":0},
+  {"id":"vps-b","trust":"trusted","capabilities":["llama"],"models":["synthetic-model"],"ram_available_mb":1200,"ram_headroom_mb":100,"disk_free_bytes":1000,"thermal_c":33,"priority":1}
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "s24-ultra", "trust": "local", "capabilities": [],
+    "models": [], "ram_available_mb": 0, "ram_headroom_mb": 1024,
+    "disk_free_bytes": 0, "thermal_c": 45, "priority": 0
+  },
+  {
+    "id": "vps", "trust": "trusted", "capabilities": [],
+    "models": [], "ram_available_mb": 0, "ram_headroom_mb": 4096,
+    "disk_free_bytes": 0, "thermal_c": 45, "priority": 10
+  }
+]

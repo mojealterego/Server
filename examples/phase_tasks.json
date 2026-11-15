@@ -1,0 +1,4 @@
+[
+  {"id":"analyze","engine":"llama","models":["synthetic-model"],"ram_mb":400,"duration_slots":2,"output_bytes":100,"privacy":"trusted_only"},
+  {"id":"compose","engine":"llama","models":["synthetic-model"],"ram_mb":400,"duration_slots":2,"output_bytes":200,"privacy":"any","depends_on":["analyze"]}
+]

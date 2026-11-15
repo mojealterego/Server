@@ -1,0 +1,7 @@
+vps/secrets/
+vps/data/
+vps/.env
+*.log
+__pycache__/
+.pytest_cache/
+*.pyc

@@ -1,0 +1,92 @@
+name: omega-storage
+services:
+  ftps:
+    build:
+      context: ./ftps
+    restart: unless-stopped
+    environment:
+      FTPS_PUBLIC_HOST: ${FTPS_PUBLIC_HOST:-127.0.0.1}
+    ports:
+      - "${FTPS_BIND_ADDRESS:-127.0.0.1}:2121:2121/tcp"
+      - "${FTPS_BIND_ADDRESS:-127.0.0.1}:50000-50015:50000-50015/tcp"
+    volumes:
+      - "${OMEGA_DATA_DIR:-./data}:/srv/omega:rw"
+      - "./secrets/ftps_password:/run/omega/ftps_password:ro"
+      - "./secrets/tls.crt:/run/omega/tls.crt:ro"
+      - "./secrets/tls.key:/run/omega/tls.key:ro"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    pids_limit: 128
+    mem_limit: 512m
+    ulimits:
+      nofile:
+        soft: 8192
+        hard: 8192
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  sftp:
+    build:
+      context: ./sftp
+    restart: unless-stopped
+    ports:
+      - "${SFTP_BIND_ADDRESS:-127.0.0.1}:2222:2222/tcp"
+    volumes:
+      - "${OMEGA_DATA_DIR:-./data}:/srv/omega-jail/files:rw"
+      - "./secrets/authorized_keys:/run/omega-input/authorized_keys:ro"
+      - "./secrets/ssh_host_ed25519_key:/run/omega-input/ssh_host_ed25519_key:ro"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - SYS_CHROOT
+    pids_limit: 128
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  media-worker:
+    profiles: [media]
+    build:
+      context: .
+      dockerfile: media/Dockerfile
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    command: ["serve", "--queue", "/data/queue", "--models", "/models", "--sd-cli", "/engine/sd-cli", "--backend", "${OMEGA_MEDIA_BACKEND:-cpu}", "--verify-media"]
+    volumes:
+      - "${OMEGA_DATA_DIR:-./data}/queue:/data/queue:rw"
+      - "./models:/models:ro"
+      - "./engine:/engine:ro"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: ${OMEGA_MEDIA_MEM_LIMIT:-8g}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
