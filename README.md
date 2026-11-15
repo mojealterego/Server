@@ -37,3 +37,22 @@ python3 -m unittest discover -s tests -q
 ```
 
 Repozytorium jest **publiczne**. Nie przesyłaj prywatnej telemetrii, sekretów ani niezweryfikowanych plików z Google Drive.
+
+## Import kompletnych źródeł (z lokalnej paczki v4)
+
+Repozytorium zostało zainicjalizowane, a podstawowa dokumentacja i zweryfikowany skrypt importu są dostępne na `main`. **Pełne 91 plików źródłowych nie zostało jeszcze opublikowanych w GitHubie.** Do importu potrzebne jest źródłowe archiwum `OMEGA_STORAGE_AI_v4.0.0.zip`.
+
+Na urządzeniu z Pythonem 3.10+ i Gitem (np. Termux), po pobraniu archiwum z rozmowy:
+
+```bash
+pkg install -y python git
+git clone https://github.com/mojealterego/Server.git
+cd Server
+python3 scripts/import_bundle.py \
+  --archive "$HOME/storage/downloads/OMEGA_STORAGE_AI_v4.0.0.zip" \
+  --repo . --commit --push
+```
+
+Skrypt sprawdza SHA-256 archiwum, CRC, 90 sum źródeł, listę dozwolonych ścieżek, czystość drzewa Git oraz gałąź `main`. Nie usuwa istniejących plików, nie wykonuje `push --force` i nie publikuje modeli. Wymaga działających poświadczeń GitHub do `git push`.
+
+**Uwaga dla audytu:** poprzedni raport `reports/verification.json` jest historycznym artefaktem testów v4, a nie dowodem wykonania testów na bieżącym sprzęcie.
