@@ -66,6 +66,15 @@ test_end_to_end_local_receipt (test_phase_cli.PhaseCLITests.test_end_to_end_loca
 test_rehashed_wrong_failure_node_rejected (test_phase_properties.Properties.test_rehashed_wrong_failure_node_rejected) ... ok
 test_two_hundred_seeded_schedules_all_certificates_check (test_phase_properties.Properties.test_two_hundred_seeded_schedules_all_certificates_check) ... ok
 test_deterministic_synthetic_replay (test_phasebench.PhaseBenchTests.test_deterministic_synthetic_replay) ... ok
+test_duplicate_execution_not_repeated (test_phasechat.LlamaPhaseIntegration.test_duplicate_execution_not_repeated) ... ok
+test_e2e_real_http_process_and_cas_receipt (test_phasechat.LlamaPhaseIntegration.test_e2e_real_http_process_and_cas_receipt) ... ok
+test_external_endpoint_blocked_before_claim (test_phasechat.LlamaPhaseIntegration.test_external_endpoint_blocked_before_claim) ... ok
+test_invalid_response_cannot_be_published (test_phasechat.LlamaPhaseIntegration.test_invalid_response_cannot_be_published) ... ok
+test_mismatched_model_fails_without_post (test_phasechat.LlamaPhaseIntegration.test_mismatched_model_fails_without_post) ... ok
+test_model_binding_is_required_before_claim (test_phasechat.LlamaPhaseIntegration.test_model_binding_is_required_before_claim) ... ok
+test_prompt_exceeds_limit_refused (test_phasechat.LlamaPhaseIntegration.test_prompt_exceeds_limit_refused) ... ok
+test_prompt_symlink_refused (test_phasechat.LlamaPhaseIntegration.test_prompt_symlink_refused) ... ok
+test_unready_server_times_out_without_post (test_phasechat.LlamaPhaseIntegration.test_unready_server_times_out_without_post) ... ok
 test_cli_runs_real_command_and_persists_to_cas (test_phaseexec_cli.PhaseExecCLITests.test_cli_runs_real_command_and_persists_to_cas) ... ok
 test_claim_and_complete_with_actual_file_hash (test_phaselease.LeaseTests.test_claim_and_complete_with_actual_file_hash) ... ok
 test_concurrent_claims_exactly_one_wins (test_phaselease.LeaseTests.test_concurrent_claims_exactly_one_wins) ... ok
@@ -159,6 +168,6 @@ test_reject_unexpected_job_command_fields (test_v2.V2WorkerTests.test_reject_une
 test_success_artifact_staged_then_published (test_v2.V2WorkerTests.test_success_artifact_staged_then_published) ... ok
 
 ----------------------------------------------------------------------
-Ran 159 tests in 71.806s
+Ran 168 tests in 84.988s
 
 OK

@@ -1,5 +1,13 @@
-# OMEGA-X v4.2.0 — PHASESHIFT / ATLAS / FENCED EXECUTION
+# OMEGA-X v4.3.0 — PHASESHIFT / ATLAS / FENCED EXECUTION
 
+
+## v4.3: PHASECHAT — wykonanie zapytań lokalnego llama-server w obrębie planu
+
+- `atlas/llama_job.py`: ograniczony do `http://127.0.0.1:PORT` klient health/model/chat, bez proxy, przekierowań i automatycznych powtórzeń POST.
+- `tools/llama_job.py` i `tools/phasechat.py`: jedno uruchomienie modelu lokalnego (jeżeli server **już działa**) pod rzeczywistą dzierżawą `SupervisedExecutor`; wynik tekstowy jest sprawdzany, zatwierdzany w CAS SHA-256 i powiązany ze stanem SQLite.
+- Jawna mapa `runtime_model_ids` w zadaniu, z certyfikatem planu; model ID serwera nie potwierdza kryptograficznie wag.
+- Testy integracyjne uruchamiają rzeczywisty HTTP loopback + subprocess + CAS, ale **serwer odpowiada fikcyjnym tekstem**; nie jest to test prawdziwego modelu ani sprzętu.
+- Szczegóły `docs/LLAMA_PHASECHAT.md`.
 
 ## v4.2: runtime RAM admission + supervised, fenced execution
 

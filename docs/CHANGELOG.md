@@ -1,3 +1,9 @@
+## v4.3.0 — PHASECHAT: lokalna inferencja pod fencing i CAS
+
+- Dedykowane CLI `tools/phasechat.py` integruje sprawdzony plan i runtime-model binding z wywołaniem lokalnego llama-server, transakcyjną rezerwacją RAM, heartbeat i zatwierdzeniem odpowiedzi w CAS.
+- `GET /health` obsługuje czasowe 503; POST nie jest ponawiany automatycznie. Model identity to jedynie `data[].id` zgłoszone przez serwer.
+- Testy e2e lokalnego HTTP, subprocess, SQLite i CAS z atrapą serwera; realne wagi i hardware: NOT_RUN.
+
 ## v4.2.0 — deklaratywne rezerwacje RAM + nadzorowany wykonawca
 
 - SQLite runtime admission sprawdza sumę aktywnych dzierżaw dla pojedynczego `node_id` w **wspólnym** DB. Wynik kompilacji slotów nie jest już traktowany jako autoryzacja do uruchomienia równoczesnego.

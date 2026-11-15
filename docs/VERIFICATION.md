@@ -1,3 +1,7 @@
+## Testy nowego adaptera PHASECHAT
+
+`PYTHONPATH=. python3 -m unittest -v tests.test_phasechat` sprawdza lokalną granicę HTTP, proces potomny oraz CAS. Odpowiedź HTTP pochodzi z `ThreadingHTTPServer` uruchomionego w teście, a nie z wag GGUF. Status `COMPLETED` dowodzi tylko poprawnego wykonania procesu i zatwierdzenia tekstu, nie jakości modelu czy wydajności urządzenia. Kontrakt: `docs/LLAMA_PHASECHAT.md`.
+
 ## PHASESHIFT v4 — nowe dowody
 
 Testy `test_phaseshift.py`, `test_phase_properties.py`, `test_phaselease.py`, `test_phase_cli.py`, `test_phasebench.py` sprawdzają harmonogramy, kontrfaktyczne N−1, 200 losowych deterministycznych instancji, zasady prywatności, modyfikacje certyfikatów, lokalne SQLite fencing i prawdziwe hashowanie plików. Benchmark syntetyczny nie potwierdza przewagi wydajnościowej na urządzeniach. `reports/phaseshift_benchmark.json` powstaje podczas `verify.sh` i raportuje liczby z rzeczywistego uruchomienia symulacji.

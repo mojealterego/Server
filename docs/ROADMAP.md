@@ -1,3 +1,10 @@
+## P0 — po v4.3: uruchomienie prawdziwych modeli
+
+- PHASECHAT obsługuje uruchomienie **zapytania** na gotowym lokalnym llama-server, nie uruchamia automatycznie samych modeli. Wykonać prawdziwy test Qwen GGUF + mmproj na S24 Ultra: memory, temperatura, model_id, poprawność, opóźnienie oraz retry po awarii.
+- Potwierdzić hash wag GGUF w Google Drive vs lokalny plik; weryfikacja lineage Qwen/mmproj bez założenia zgodności.
+- FLUX/Wan/LTX to osobne rodziny o innych API; nie wolno stosować adaptera llama jako substytutu generowania wideo lub obrazów.
+- Prawdziwa kontrola RAM/cgroups i przenoszenie checkpointów pomiędzy hostami pozostaje otwarte.
+
 # v4.2 — stan i następne bramki
 
 **Zaimplementowane i poddane testom hosta:** transakcyjne admission deklarowanego RAM pomiędzy zadaniami i planami w jednej bazie SQLite; fenced `fail`; nadzorowany lokalny subprocess z heartbeat, timeout, ograniczonym logiem i CAS. Nie jest to sprzętowe wymuszanie przydziału RAM ani rozproszony lease.
