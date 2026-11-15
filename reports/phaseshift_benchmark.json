@@ -1,0 +1,14 @@
+{
+  "admitted": 163,
+  "blocked": 37,
+  "cases": 200,
+  "comparator": "naive immediate concurrent placement on first node (not ATLAS v3 scheduler)",
+  "indeterminate": 0,
+  "measurement": "in-memory simulated declarations; no real throughput, energy or transfer",
+  "naive_overcommit_cases": 164,
+  "primary_feasible": 163,
+  "resilient": 73,
+  "schema": "omega.phaseshift.synthetic.v1",
+  "seed": 20261115,
+  "verified_certificates": 200
+}
