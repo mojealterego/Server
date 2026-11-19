@@ -1,3 +1,8 @@
+# v4.4 development — CAPCTL
+
+- Implemented: signed node declarations, operator trust and capacity policy, freshness and atomic persistent replay rejection. Optional verified-node JSON input for PHASESHIFT; 10 focused tests passed on Linux/OpenSSL 3.5.5.
+- Open: full repository regression, automatic telemetry collection and runtime enforcement of attestation freshness, distributed replay registry, mTLS transport, key rotation procedure, device-backed attestation and actual hardware inference. Signature authenticates a declaration, not its physical truth.
+
 ## P0 — po v4.3: uruchomienie prawdziwych modeli
 
 - PHASECHAT obsługuje uruchomienie **zapytania** na gotowym lokalnym llama-server, nie uruchamia automatycznie samych modeli. Wykonać prawdziwy test Qwen GGUF + mmproj na S24 Ultra: memory, temperatura, model_id, poprawność, opóźnienie oraz retry po awarii.

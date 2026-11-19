@@ -1,3 +1,7 @@
+# OMEGA-X v4.4 development — CAPCTL
+
+New optional admission gate for PHASESHIFT: Ed25519 signed node declarations, pinned per-node keys, operator capacity limits and durable SQLite replay rejection. See [CAPCTL runbook](docs/CAPCTL.md). Ten focused host tests passed; full repository regression and mobile hardware validation remain pending. Existing v4.3 reports are historical, not results for v4.4.
+
 # OMEGA-X v4.3.0 — PHASESHIFT / ATLAS / FENCED EXECUTION
 
 
