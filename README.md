@@ -1,3 +1,7 @@
+# OMEGA-X v4.6 development — LOCAL RECOVERY
+
+Mandatory local per-node execution exclusion for SupervisedExecutor, a guardian monitoring supervisor death, inherited kernel locks, and an immediate RUNTIME_GUARD lease failure fix. See [RECOVERY runbook](docs/RECOVERY.md). 35 focused tests passed with real crash injection; full repository and hardware regression remain pending.
+
 # OMEGA-X v4.5 development — LIVE RUNTIME GATE
 
 Optional signed live telemetry admission and continuous local supervision for phaseexec/phasechat. See [runtime gate runbook](docs/RUNTIME_GATE.md). 26 focused local tests passed (including v4.4 tests); no full regression or hardware inference claimed.

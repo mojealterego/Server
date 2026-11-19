@@ -12,6 +12,7 @@ class GuardedExecutionTests(unittest.TestCase):
         t=tempfile.TemporaryDirectory();self.addCleanup(t.cleanup);self.root=Path(t.name)
         self.cas=Mock();self.cas.root=self.root/'cas'
         self.lease=Mock();self.lease.artifacts=self.cas
+        self.lease.path=self.root/'jobs.sqlite';self.lease.path.touch(mode=0o600)
         self.lease.claim.return_value={'epoch':1,'token':'token'}
         self.lease.complete.return_value={'output_sha256':'digest'}
         self.work=self.root/'work';self.executor=SupervisedExecutor(self.lease,self.cas,self.work)

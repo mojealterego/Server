@@ -16,6 +16,7 @@ import time
 from .artifacts import ArtifactStore, ArtifactError, _private_dir
 from .phaselease import LeaseStore, LeaseError
 from .runtime_gate import RuntimeGate, GateError
+from .recovery import NodeLock, RecoveryBusy, spawn_guarded
 
 SUFFIX = re.compile(r'^\.[a-z0-9]{1,8}$')
 
@@ -98,6 +99,18 @@ class SupervisedExecutor:
             suffix: str = '.bin', max_log_bytes: int = 262144,
             runtime_gate: RuntimeGate | None = None) -> dict:
         self._check_args(argv,suffix,timeout_seconds,ttl,max_log_bytes)
+        try:
+            lock = NodeLock(self.lease.path,node_id)
+            with lock:
+                return self._run_locked(task_id,node_id,argv,ttl=ttl,timeout_seconds=timeout_seconds,
+                    suffix=suffix,max_log_bytes=max_log_bytes,runtime_gate=runtime_gate,lock=lock)
+        except RecoveryBusy as exc:
+            raise ExecutionError('RECOVERY_BUSY',str(exc)) from exc
+        except OSError as exc:
+            raise ExecutionError('RECOVERY_IO',str(exc)) from exc
+
+    def _run_locked(self, task_id, node_id, argv, *, ttl, timeout_seconds, suffix,
+                    max_log_bytes, runtime_gate, lock):
         def check_runtime(starting=False):
             if runtime_gate is not None:
                 try:
@@ -123,6 +136,7 @@ class SupervisedExecutor:
                     args=(task_id,node_id,claim['token'],epoch,ttl,stop,lost),
                     name='omega-lease-heartbeat',daemon=True)
         proc = None
+        control = None
         reader = None
         log_fd = None
         error_code = None
@@ -133,9 +147,7 @@ class SupervisedExecutor:
                 log_fd = None
                 check_runtime(starting=True)
                 try:
-                    proc = subprocess.Popen(command, shell=False, cwd=self.root, env=env,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            stdin=subprocess.DEVNULL, start_new_session=True,close_fds=True)
+                    proc, control = spawn_guarded(lock,command,self.root,env)
                 except OSError as exc:
                     raise ExecutionError('PROCESS_FAILED','Cannot start subprocess') from exc
                 assert proc.stdout is not None
@@ -150,7 +162,10 @@ class SupervisedExecutor:
                             break
                         if kept < max_log_bytes:
                             fragment = data[:max_log_bytes-kept]
-                            log.write(fragment)
+                            try:
+                                log.write(fragment)
+                            except (OSError,ValueError):
+                                return
                             kept += len(fragment)
                 reader = threading.Thread(target=drain,name='omega-bounded-log',daemon=True)
                 reader.start()
@@ -168,6 +183,9 @@ class SupervisedExecutor:
                         proc.wait(timeout=min(0.15, max(0.01,timeout_seconds-(time.monotonic()-started))))
                     except subprocess.TimeoutExpired:
                         pass
+                reader.join(timeout=2)
+                if reader.is_alive():
+                    raise ExecutionError('PROCESS_FAILED','Child stdout remains open after exit')
                 if lost.is_set():
                     raise ExecutionError('LEASE_LOST','Lease lost before result publication')
                 if proc.returncode != 0:
@@ -194,6 +212,8 @@ class SupervisedExecutor:
             raise ExecutionError(error_code,str(exc)) from exc
         finally:
             stop.set()
+            if control is not None:
+                os.close(control)
             if proc is not None:
                 _terminate_group(proc)
                 if reader is not None:

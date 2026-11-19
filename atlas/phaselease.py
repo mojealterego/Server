@@ -247,7 +247,7 @@ class LeaseStore:
 
     def fail(self, task_id, node_id, token, epoch, reason, *, now=None):
         if reason not in {'PROCESS_FAILED', 'PROCESS_TIMEOUT', 'PROCESS_INTERRUPTED',
-                          'OUTPUT_MISSING', 'OUTPUT_INVALID', 'LEASE_LOST'}:
+                          'OUTPUT_MISSING', 'OUTPUT_INVALID', 'LEASE_LOST', 'RUNTIME_GUARD'}:
             raise LeaseError('Unsupported failure reason')
         clock = _time(now)
         def op():

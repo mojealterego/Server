@@ -1,3 +1,9 @@
+# v4.6 development — LOCAL RECOVERY
+
+- Implemented: mandatory per-node flock in SupervisedExecutor, guardian with parent-lifetime pipe, process-group kill on supervisor death, inherited lock for cooperative foreground child, recovery status CLI, bounded log drain before publication, and RUNTIME_GUARD failure persisted in the lease state machine.
+- Verified: 35 focused local tests, including 8 new recovery/exclusion tests, one SQLite failure-state regression and 26 existing focused tests. Real processes and SIGKILL; controlled lease/CAS doubles in supervisor tests, extracted exact fail/transaction logic with an ownership double in SQLite regression. Full repository suite unavailable in test runner because Git clone fails DNS. Earlier reports are historical.
+- Open: reconciling durable lease epochs on restart using the full stack, actual device tests, distributed lock and CAS, safe cancellation of remote llama-server, arbitrary daemon/descendant tracking and checkpoint-based process reattachment. Recovery is retry-oriented, not process memory restoration.
+
 # v4.5 development — LIVE RUNTIME GATE
 
 - Implemented: automatic signed collection of local memory, filesystem and configured thermal telemetry; optional cgroup-v2 ceiling; fresh CAPCTL admission at execution; runtime checks before claim, before process spawn, once per second and before result publication; ties gate to task and node.
