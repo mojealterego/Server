@@ -1,3 +1,9 @@
+# Compute v5.2a + STORAGE-02 — fenced restart and verified SMB cache
+
+- Compute: operator-confirmed adaptive full restart with fresh signed survivor telemetry, conservative replanning, verified successor certificate, atomic durable predecessor retirement, no live-lease takeover and explicit completed-job restart authorization. 9 new tests passed; automatic detection/migration and completed artifact reuse are still open.
+- Storage: per-model Ed25519 manifests and independent SHA pin, 4 MiB verified range staging from up to eight named model-share replicas, resume, cache-hit revalidation, bounded subprocess and private cache disk admission. 8 new tests passed; actual SMB/Rclone/S24/Windows negotiation and device integration remain open. Existing SMB2/SMB3 service retained.
+- Regression: 13 dispatch + 11 scheduler + 9 recovery cases passed; full repo regression and real hardware deployment not performed. Next: remaining adaptive failover automation/global retry policy and STORAGE-03 snapshots/verified replication.
+
 # Compute v5.1 — autonomous node scheduler
 
 - Implemented: node-local polling of admitted assigned stages, dependency readiness over mTLS, deterministic planned-slot ordering, privacy exclusion, bounded idle/RPC/preclaim failures, opt-in retry with coordinator-side requested epoch budget, recovery through persisted lease status and local duplicate scheduler exclusion.

@@ -10,6 +10,7 @@ class RecoveryLeaseTests(unittest.TestCase):
         lease.conn=sqlite3.connect(':memory:',isolation_level=None)
         self.addCleanup(lease.conn.close)
         lease.plan_hash='p'
+        lease.conn.execute('CREATE TABLE retired_plans(plan_hash TEXT PRIMARY KEY)')
         lease.conn.execute('CREATE TABLE leases (plan_hash TEXT,task_id TEXT,state TEXT,last_error TEXT,output_sha256 TEXT)')
         lease.conn.execute("INSERT INTO leases VALUES ('p','job','LEASED',NULL,NULL)")
         lease._check_owner=Mock()

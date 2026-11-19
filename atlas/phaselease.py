@@ -123,6 +123,9 @@ class LeaseStore:
                     node_id TEXT PRIMARY KEY, ram_capacity_mb INTEGER NOT NULL,
                     disk_free_bytes INTEGER NOT NULL, trust TEXT NOT NULL
                 )''')
+                self.conn.execute('''CREATE TABLE IF NOT EXISTS retired_plans (
+                    plan_hash TEXT PRIMARY KEY, successor_hash TEXT NOT NULL UNIQUE, payload TEXT NOT NULL
+                )''')
                 for node in self.nodes.values():
                     cap = node['ram_available_mb'] - node['ram_headroom_mb']
                     observed = self.conn.execute(
@@ -161,6 +164,8 @@ class LeaseStore:
     def _transaction(self, func):
         self.conn.execute('BEGIN IMMEDIATE')
         try:
+            if self.conn.execute('SELECT 1 FROM retired_plans WHERE plan_hash=?',(self.plan_hash,)).fetchone():
+                raise LeaseError('Plan permanently retired')
             result = func()
             self.conn.execute('COMMIT')
             return result

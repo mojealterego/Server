@@ -1,3 +1,7 @@
+# OMEGA-X v5.2a + STORAGE-02 development
+
+Fenced operator-confirmed PHASESHIFT restart after node failure and signed per-model SMB cache with Merkle resume and verified replica failover. See [failover](docs/FAILOVER.md) and [storage cache](docs/STORAGE_CACHE.md). 17 new tests and 33 selected regression tests passed. Automatic migration, real SMB/mobile qualification and full repository validation remain open.
+
 # OMEGA-X v5.1 development — autonomous node scheduler
 
 Certified network stages can now run via `atlas.dispatch_worker --schedule`, with readiness polling, bounded retry, backoff and remote epoch budget checks. See [scheduler runbook](docs/SCHEDULER.md). 11 new unit tests plus 13 dispatch tests passed, including two new integration tests. The parallel SMB2/SMB3 storage track remains active.
