@@ -1,3 +1,7 @@
+# OMEGA-X v4.9 development — MULTIMODAL ORCHESTRATOR
+
+Typed local DAG execution for Qwen text, FLUX.1 PNG, Wan T2V/I2V and LTX-2 AVI, with fenced execution, verified CAS dependencies and explicit retry. See [multimodal runbook](docs/MULTIMODAL.md). 24 new cases and 35 selected regressions passed locally with synthetic engines; physical inference and distributed dispatch remain open.
+
 # OMEGA-X v4.8 development — mTLS CAPABILITY GATEWAY
 
 Private TLS 1.3 admission transport with mutual certificate verification, certificate pinning tied to CAPCTL node identity, Ed25519 policy checks and durable anti-replay state. See [mTLS runbook](docs/MTLS_MESH.md). 26 focused tests passed, including real local TLS and separate CLI processes. Full peer-to-peer mesh and real Android/VPS deployment remain open.

@@ -1,3 +1,9 @@
+# v4.9 development — MULTIMODAL ORCHESTRATOR
+
+- Implemented: typed recipe DAG, strict modality dependencies, operator-enrolled model bundle validation and streaming media weight SHA-256, local supervised engine execution, output signature/dimensions/frame count/FPS/decode verification, CAS checkpoint reuse and explicit failure retry, optional per-stage runtime gate.
+- Verified: 24 new unit/integration cases in groups and 35 selected existing regression cases. Actual upstream planner/lease/guardian/CAS and FFmpeg, synthetic engine endpoints; no actual AI inference claim. Full regression and hardware test remain open.
+- Open: physical model/backend qualification, Qwen loaded-weight attestation, audio validation, cross-node dispatch over mTLS, privacy-aware automatic replication, global fencing, automatic admission renewal. v5.0 is not closed.
+
 # v4.8 development — SECURE mTLS CAPABILITY GATEWAY
 
 - Implemented: bounded TLS 1.3 gateway and client; mutual certificate authentication, dual leaf certificate pinning, SAN verification, node-ID binding, CAPCTL signature/policy/replay reuse, strict bounded framed JSON, timeout/connection controls, and explicit private network opt-in.
