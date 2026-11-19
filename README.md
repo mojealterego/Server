@@ -1,3 +1,7 @@
+# OMEGA-X v4.7 development — REPLICATED CAS
+
+Resumable content-addressed block replication, pinned manifests, per-block failover and local atomic CAS restoration. See [replication runbook](docs/REPLICATION.md). 12 focused tests passed in groups plus a CLI smoke test using a controlled Rclone process double; actual cloud, device and whole-repository regression remain open.
+
 # OMEGA-X v4.6 development — LOCAL RECOVERY
 
 Mandatory local per-node execution exclusion for SupervisedExecutor, a guardian monitoring supervisor death, inherited kernel locks, and an immediate RUNTIME_GUARD lease failure fix. See [RECOVERY runbook](docs/RECOVERY.md). 35 focused tests passed with real crash injection; full repository and hardware regression remain pending.

@@ -1,3 +1,9 @@
+# v4.7 development — REPLICATED CAS
+
+- Implemented: explicit push/pull via Rclone, fixed 4 MiB deduplicated blocks, upload/read-back verification, manifest-last publication, pinned manifest and artifact SHA-256, replica failover, resumable Merkle staging and atomic local CAS publication without duplicating the artifact.
+- Verified: 12 focused tests run in groups, plus explicit CLI authorization and round trip; real upstream ArtifactStore/Merkle code with controlled Rclone subprocess. Full repository regression, real Rclone/provider/VPS/mobile validation remain open.
+- Open: signed receipts, automatic workflow privacy policy on exports, repair and GC, background replication, mTLS control plane and distributed fencing. Separate configured remotes do not prove independent failure domains.
+
 # v4.6 development — LOCAL RECOVERY
 
 - Implemented: mandatory per-node flock in SupervisedExecutor, guardian with parent-lifetime pipe, process-group kill on supervisor death, inherited lock for cooperative foreground child, recovery status CLI, bounded log drain before publication, and RUNTIME_GUARD failure persisted in the lease state machine.
