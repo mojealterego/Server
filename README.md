@@ -1,3 +1,7 @@
+# OMEGA-X v4.8 development — mTLS CAPABILITY GATEWAY
+
+Private TLS 1.3 admission transport with mutual certificate verification, certificate pinning tied to CAPCTL node identity, Ed25519 policy checks and durable anti-replay state. See [mTLS runbook](docs/MTLS_MESH.md). 26 focused tests passed, including real local TLS and separate CLI processes. Full peer-to-peer mesh and real Android/VPS deployment remain open.
+
 # OMEGA-X v4.7 development — REPLICATED CAS
 
 Resumable content-addressed block replication, pinned manifests, per-block failover and local atomic CAS restoration. See [replication runbook](docs/REPLICATION.md). 12 focused tests passed in groups plus a CLI smoke test using a controlled Rclone process double; actual cloud, device and whole-repository regression remain open.

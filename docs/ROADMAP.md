@@ -1,3 +1,9 @@
+# v4.8 development — SECURE mTLS CAPABILITY GATEWAY
+
+- Implemented: bounded TLS 1.3 gateway and client; mutual certificate authentication, dual leaf certificate pinning, SAN verification, node-ID binding, CAPCTL signature/policy/replay reuse, strict bounded framed JSON, timeout/connection controls, and explicit private network opt-in.
+- Verified: 16 new local mTLS tests + 10 CAPCTL tests in a single 26/26 passing run with real TLS and separate CLI processes. Full repository and physical-device regression remains open.
+- Open: certificate lifecycle automation and revocation, discovery, independently signed receipts, distributed membership/lease, network telemetry, authenticated dispatch, durable audit and real mobile/VPS deployment. This is an admission transport, not a full peer-to-peer mesh.
+
 # v4.7 development — REPLICATED CAS
 
 - Implemented: explicit push/pull via Rclone, fixed 4 MiB deduplicated blocks, upload/read-back verification, manifest-last publication, pinned manifest and artifact SHA-256, replica failover, resumable Merkle staging and atomic local CAS publication without duplicating the artifact.
