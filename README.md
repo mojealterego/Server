@@ -1,3 +1,7 @@
+# OMEGA-X v5.0 development — AUTHENTICATED HYBRID EXECUTION
+
+Central fenced dispatcher, authenticated remote typed-stage worker, live lease renewal, and resumable mTLS dependency/output transfers into CAS. See [hybrid runbook](docs/HYBRID_DISPATCH.md). 11 new and 68 selected regression tests passed locally; a physical S24/VPS deployment, automatic scheduler polling and coordinator HA remain open.
+
 # OMEGA-X v4.9 development — MULTIMODAL ORCHESTRATOR
 
 Typed local DAG execution for Qwen text, FLUX.1 PNG, Wan T2V/I2V and LTX-2 AVI, with fenced execution, verified CAS dependencies and explicit retry. See [multimodal runbook](docs/MULTIMODAL.md). 24 new cases and 35 selected regressions passed locally with synthetic engines; physical inference and distributed dispatch remain open.

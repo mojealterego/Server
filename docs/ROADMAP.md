@@ -1,3 +1,9 @@
+# v5.0 development — AUTHENTICATED HYBRID EXECUTION
+
+- Implemented: single central PHASESHIFT lease authority, pinned mutual TLS task dispatch, fresh signed CAPCTL telemetry per claim/renewal, effective privacy enforcement, bounded resumable dependency and result transfers, typed output verification before fenced completion, automatic execution of a named stage with guardian and renewal in a worker process.
+- Verified: 11 new tests and 68 selected regression tests on Linux; real TLS, SQLite, CAS, managed subprocesses and controlled model endpoints/telemetry. Full repository regression and physical AI inference remain open.
+- Open: autonomous polling/scheduling, cross-host hardware tests, coordinator HA/consensus, automatic failover reassignment, integrated privacy-aware bulk replication, quota/GC and model qualification. No final production v5.0 release claimed.
+
 # v4.9 development — MULTIMODAL ORCHESTRATOR
 
 - Implemented: typed recipe DAG, strict modality dependencies, operator-enrolled model bundle validation and streaming media weight SHA-256, local supervised engine execution, output signature/dimensions/frame count/FPS/decode verification, CAS checkpoint reuse and explicit failure retry, optional per-stage runtime gate.

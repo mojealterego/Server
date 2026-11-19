@@ -52,7 +52,7 @@ def dimensions(r,kind):
         require(bounded_int(r.get('frames'),2,257) and bounded_int(r.get('fps'),1,60),'Invalid video parameters')
 
 
-def validate_recipes(tasks,catalog,assignments):
+def validate_recipes(tasks,catalog,assignments,*,allow_cross_node=False):
     """Validate the complete recipe DAG before any engine runs.
 
     LeaseStore separately verifies the PHASESHIFT certificate. Local dispatch
@@ -82,7 +82,7 @@ def validate_recipes(tasks,catalog,assignments):
                 upstream=by_id[ref].get('recipe',{});require(isinstance(upstream,dict) and KINDS.get(upstream.get('kind'))==suffix,'Incompatible dependency modality')
                 inputs.add(ref)
         require(set(deps)==inputs,'Unused dependency refused')
-        require(all(assignments[d]['node']==assignments[t['id']]['node'] for d in deps),'Cross-node handoff requires distributed dispatch, not this local runner')
+        require(allow_cross_node or all(assignments[d]['node']==assignments[t['id']]['node'] for d in deps),'Cross-node handoff requires distributed dispatch, not this local runner')
         require(bounded_int(t.get('output_bytes'),1,MAX_OUTPUT),'Invalid output budget')
         models=t.get('models');require(isinstance(models,list) and models and all(isinstance(x,str) and x in catalog for x in models) and len(models)==len(set(models)),'Invalid model list')
         if not media:
