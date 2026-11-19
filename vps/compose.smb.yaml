@@ -1,0 +1,47 @@
+services:
+  smb:
+    profiles: [smb]
+    build:
+      context: ./smb
+    init: true
+    restart: unless-stopped
+    ports:
+      - "${SMB_BIND_ADDRESS:-127.0.0.1}:${SMB_PORT:-445}:1445/tcp"
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 768m
+    volumes:
+      - type: bind
+        source: ./smb-data/compat
+        target: /srv/omega-smb/compat
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./smb-data/secure
+        target: /srv/omega-smb/secure
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./smb-models
+        target: /srv/omega-smb/models
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./smb-secrets/compat_password
+        target: /run/omega/compat_password
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./smb-secrets/secure_password
+        target: /run/omega/secure_password
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'

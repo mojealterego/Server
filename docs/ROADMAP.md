@@ -1,3 +1,9 @@
+# Parallel roadmap — OMEGA-X compute + OMEGA STORAGE
+
+Storage is a permanent companion workstream, not a replacement for compute. STORAGE-01 implemented: native Samba SMB2/SMB3 service, separate signed compatibility and encrypted shares, read-only models, private IPv4 bind guard, idempotent credentials, acceptance probe. 11 focused local tests passed (SMB client simulated); Docker/Samba and physical client gate NOT_RUN. STORAGE-02 mobile network drives and verified cache; STORAGE-03 CAS/Rclone snapshots and replication; STORAGE-04 ACLs/quotas/audit/SMB3 performance; STORAGE-05 independent storage failover. See docs/SMB_STORAGE.md.
+
+Compute v5.1 autonomous scheduler is still open; no compute completion claim in this storage increment.
+
 # v5.0 development — AUTHENTICATED HYBRID EXECUTION
 
 - Implemented: single central PHASESHIFT lease authority, pinned mutual TLS task dispatch, fresh signed CAPCTL telemetry per claim/renewal, effective privacy enforcement, bounded resumable dependency and result transfers, typed output verification before fenced completion, automatic execution of a named stage with guardian and renewal in a worker process.

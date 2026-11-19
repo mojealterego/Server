@@ -5,3 +5,6 @@ vps/.env
 __pycache__/
 .pytest_cache/
 *.pyc
+vps/smb-data/
+vps/smb-models/
+vps/smb-secrets/

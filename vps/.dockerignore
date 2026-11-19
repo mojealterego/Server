@@ -6,3 +6,6 @@ engine
 .git
 __pycache__
 *.pyc
+smb-data
+smb-models
+smb-secrets
