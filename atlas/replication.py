@@ -4,6 +4,7 @@ Integrity is pinned by object AND manifest SHA-256. This is not consensus,
 a distributed lease, or a guarantee of remote immutability or confidentiality.
 """
 from __future__ import annotations
+from concurrent.futures import ThreadPoolExecutor
 import fcntl
 import hashlib
 import json
@@ -115,7 +116,13 @@ def _manifest(store,sha):
     return m
 
 
-def push(store:ArtifactStore,sha,replicas):
+def _workers(workers):
+    if type(workers) is not int or not 1<=workers<=8:
+        raise ReplicationError("workers must be 1..8")
+
+
+def push(store:ArtifactStore,sha,replicas,*,workers=1):
+    _workers(workers)
     _replicas(replicas)
     path=store._path(sha);m=_manifest(store,sha);raw=encode(m)
     if len(raw)>MAX_MANIFEST:raise ReplicationError('Manifest exceeds bound')
@@ -124,11 +131,19 @@ def push(store:ArtifactStore,sha,replicas):
         uploaded=0
         fd,before=_open_regular(path)
         try:
-            with os.fdopen(os.dup(fd),'rb') as f:
+            with os.fdopen(os.dup(fd),'rb') as f, ThreadPoolExecutor(max_workers=workers) as pool:
+                pending=[]; seen=set()
                 for i,h in enumerate(m['chunks']):
                     n=min(CHUNK,m['size_bytes']-i*CHUNK);data=f.read(n)
                     if len(data)!=n or digest(data)!=h:raise ReplicationError('Local object changed')
-                    uploaded+=replica.ensure('blocks/'+h,data)
+                    if h in seen:continue
+                    seen.add(h)
+                    if workers==1:uploaded+=replica.ensure('blocks/'+h,data)
+                    else:
+                        pending.append(pool.submit(replica.ensure,'blocks/'+h,data))
+                        if len(pending)==workers:
+                            uploaded+=sum(job.result() for job in pending);pending.clear()
+                uploaded+=sum(job.result() for job in pending)
                 if f.read(1):raise ReplicationError('Local object grew')
             after=os.fstat(fd)
             if (after.st_mtime_ns,after.st_size)!=(before.st_mtime_ns,before.st_size):raise ReplicationError('Local object changed')
@@ -162,7 +177,8 @@ def _decode(raw,sha):
         raise ReplicationError('Invalid pinned manifest') from exc
 
 
-def pull(store:ArtifactStore,sha,manifest_sha,replicas):
+def pull(store:ArtifactStore,sha,manifest_sha,replicas,*,workers=1):
+    _workers(workers)
     _replicas(replicas);_check_digest(sha);_check_digest(manifest_sha)
     target=store._path(sha)
     if target.exists() or target.is_symlink():
@@ -185,7 +201,7 @@ def pull(store:ArtifactStore,sha,manifest_sha,replicas):
         def reader(offset,length):
             h=m['chunks'][offset//CHUNK]
             return _fetch(replicas,'blocks/'+h,length,h,exact=length)
-        result=stage_from_reader(dest,m,reader)
+        result=stage_from_reader(dest,m,reader,workers=workers)
         # Same filesystem, no second copy of the complete artifact.
         try:os.link(dest,target,follow_symlinks=False)
         except FileExistsError:store.verify(sha)

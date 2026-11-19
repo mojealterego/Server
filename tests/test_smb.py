@@ -61,11 +61,11 @@ class SMBTests(unittest.TestCase):
         with self.assertRaises(SmbError): self.provision()
 
     def test_protocol_and_share_policy(self):
-        conf=configparser.ConfigParser(interpolation=None);conf.read(ROOT/'vps/smb/smb.conf')
+        conf=configparser.ConfigParser(interpolation=None,delimiters=('=',));conf.read(ROOT/'vps/smb/smb.conf')
         g=conf['global'];self.assertEqual(g['server min protocol'],'SMB2_02');self.assertEqual(g['server max protocol'],'SMB3_11')
         self.assertEqual(g['server signing'],'mandatory');self.assertEqual(g['map to guest'],'Never');self.assertEqual(g['server smb encrypt'],'if_required')
         self.assertEqual(set(conf.sections()),{'global','omega-compat','omega-secure','omega-models'})
-        for name,account,encrypt,ro in [('omega-compat','omega-compat','if_required','no'),('omega-secure','omega-secure','required','no'),('omega-models','omega-secure','required','yes')]:
+        for name,account,encrypt,ro in [('omega-compat','omega-compat','if_required','no'),('omega-secure','omega-secure','required','no'),('omega-models','omega-secure omega-model-reader','required','yes')]:
             sec=conf[name];self.assertEqual(sec['valid users'],account);self.assertEqual(sec['server smb encrypt'],encrypt);self.assertEqual(sec['read only'],ro);self.assertEqual(sec['guest ok'],'no')
         self.assertEqual(g['wide links'],'no');self.assertEqual(g['follow symlinks'],'no')
 
@@ -74,7 +74,7 @@ class SMBTests(unittest.TestCase):
         self.assertIn('${SMB_BIND_ADDRESS:-127.0.0.1}:${SMB_PORT:-445}:1445/tcp',s)
         self.assertIn('source: ./smb-models',s);self.assertIn('read_only: true',s)
         self.assertNotIn('OMEGA_DATA_DIR',s);self.assertNotIn('/var/run/docker.sock',s)
-        self.assertEqual(s.count('create_host_path: false'),5)
+        self.assertEqual(s.count('create_host_path: false'),6)
 
     def test_compose_uses_fixed_arguments(self):
         with patch('tools.smbctl.subprocess.run') as run:
@@ -92,7 +92,7 @@ class SMBTests(unittest.TestCase):
             auth=Path(argv[argv.index('-A')+1]);self.assertEqual(stat.S_IMODE(auth.stat().st_mode),0o600)
             account=auth.read_text().splitlines()[0].split(' = ')[1];calls.append((share,version,account,cmd))
             self.assertNotIn('password = ', ' '.join(argv))
-            if version=='NT1' or share!='omega-compat' and (version=='SMB2_10' or account=='omega-compat') or share=='omega-models' and cmd.startswith('put '):
+            if account=='omega-model-reader' and share!='omega-models' or version=='NT1' or share!='omega-compat' and (version=='SMB2_10' or account=='omega-compat') or share=='omega-models' and cmd.startswith('put '):
                 return SimpleNamespace(returncode=1,stdout=b'',stderr=b'NT_STATUS_ACCESS_DENIED')
             if cmd.startswith('put '):payload[cmd.split()[2]]=(Path(kwargs['cwd'])/'send.bin').read_bytes()
             if cmd.startswith('get '):(Path(kwargs['cwd'])/'recv.bin').write_bytes(payload[cmd.split()[1]])

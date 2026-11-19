@@ -11,6 +11,8 @@ services:
       - no-new-privileges:true
     pids_limit: 128
     mem_limit: 768m
+    environment:
+      OMEGA_SMB_VOLUME_LIMITS: "${OMEGA_SMB_VOLUME_LIMITS:-}"
     volumes:
       - type: bind
         source: ./smb-data/compat
@@ -37,6 +39,12 @@ services:
       - type: bind
         source: ./smb-secrets/secure_password
         target: /run/omega/secure_password
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./smb-secrets/models_password
+        target: /run/omega/models_password
         read_only: true
         bind:
           create_host_path: false

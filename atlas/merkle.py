@@ -4,6 +4,7 @@ This is file-based resumable staging, not remote mmap or live tensor paging.
 A destination is published only after full SHA-256 and Merkle verification.
 """
 from __future__ import annotations
+from concurrent.futures import Future, ThreadPoolExecutor
 import fcntl
 import hashlib
 import math
@@ -106,13 +107,15 @@ def _fsync_dir(folder: Path) -> None:
         os.close(fd)
 
 
-def stage_from_reader(dest: Path, manifest: dict[str, Any], read_chunk) -> dict[str, Any]:
+def stage_from_reader(dest: Path, manifest: dict[str, Any], read_chunk, *, workers: int = 1) -> dict[str, Any]:
     """Stage a model from an offset/length reader; no-overwrite atomic publication.
 
     read_chunk(offset, length) must return exactly that many verified source bytes.
     Readers can be local files or authenticated Rclone range reads.
     """
     validate_manifest(manifest)
+    if type(workers) is not int or not 1 <= workers <= 8:
+        raise ManifestError("workers must be 1..8")
     dest = Path(dest)
     if not dest.parent.is_dir() or dest.parent.is_symlink():
         raise ManifestError('Destination parent must be a real directory')
@@ -141,22 +144,45 @@ def stage_from_reader(dest: Path, manifest: dict[str, Any], read_chunk) -> dict[
             current = st.st_size
             if current > manifest['size_bytes']:
                 raise ManifestError('Partial file larger than manifest')
-            for i, expected in enumerate(manifest['chunks']):
-                off = i * manifest['chunk_size']
-                n = min(manifest['chunk_size'], manifest['size_bytes'] - off)
-                if current >= off + n and _digest(os.pread(fd, n, off)) == expected:
-                    reused += 1
-                    continue
-                data = read_chunk(off, n)
+            # Bounded windows; a reader used with workers > 1 must be thread-safe.
+            # Verify existing ranges before scheduling network work.
+            def write_chunk(i, off, n, expected, data):
                 if len(data) != n or _digest(data) != expected:
                     raise ManifestError(f'Source chunk {i} does not match trusted manifest')
                 written = 0
                 while written < n:
-                    count = os.pwrite(fd, data[written:], off + written)
+                    count = os.pwrite(fd, memoryview(data)[written:], off + written)
                     if count <= 0:
                         raise OSError('Short write during staging')
                     written += count
-                copied += 1
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                for start in range(0, len(manifest['chunks']), workers):
+                    pending = []
+                    for i in range(start, min(start + workers, len(manifest['chunks']))):
+                        expected = manifest['chunks'][i]
+                        off = i * manifest['chunk_size']
+                        n = min(manifest['chunk_size'], manifest['size_bytes'] - off)
+                        if current >= off + n and _digest(os.pread(fd, n, off)) == expected:
+                            reused += 1
+                            continue
+                        if workers == 1:
+                            future = Future()
+                            try: future.set_result(read_chunk(off, n))
+                            except Exception as exc: future.set_exception(exc)
+                        else:
+                            future = pool.submit(read_chunk, off, n)
+                        pending.append((i, off, n, expected, future))
+                    try:
+                        for i, off, n, expected, future in pending:
+                            write_chunk(i, off, n, expected, future.result())
+                            copied += 1
+                    finally:
+                        for *_, future in pending:
+                            future.cancel()
+                        if pending:
+                            os.fsync(fd)
+                    pending.clear()
+                    if "future" in locals(): del future
             os.fsync(fd)
         finally:
             os.close(fd)

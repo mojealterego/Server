@@ -1,3 +1,9 @@
+# Compute v5.3 + STORAGE-04 — parallel CAS and SMB access/capacity
+
+- Compute: bounded 1..8 parallel block operations, verified Merkle resume, in-object duplicate suppression, manifest-last publication, compatible remote layout and replicactl --workers. 5 new and 12 existing replication tests passed. Actual throughput/RSS, global bandwidth arbitration and high-speed mTLS dispatch remain open.
+- Storage: independent model-only SMB3 identity, native Samba full_audit/auth logging, opt-in dedicated ext4/XFS volume-capacity checks on host and container startup, persisted policy, expanded live probe. 6 new and 11 existing SMB cases passed. Per-user quota, arbitrary ACL/user lifecycle, audit retention and real SMB/mount/SMB3 multichannel qualification remain open.
+- Snapshot/cache regression: 9 + 8 passed. 51 local cases in total, split runs, no physical or full-repository certification. Next compute: v5.4 HA authority preparation. Next storage: STORAGE-05 storage failover; outstanding qualification gates retained.
+
 # Compute v5.2b + STORAGE-03 — retry ceilings, failover watch and versioned SMB snapshots
 
 - Compute: persisted administrator attempt ceiling across workflow lineage, coordinator and direct claim enforcement, scheduler budget status, bounded expired-lease candidate detection, transactional expiry-gated cutover. 9 new cases passed. Physical fencing and automatic successor deployment remain open; v5.2 is not a transparent failover release.

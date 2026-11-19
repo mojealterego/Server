@@ -26,7 +26,7 @@ VPS_ALLOWED={
     'ftps/Dockerfile','ftps/entrypoint.sh','ftps/proftpd.conf.template',
     'sftp/Dockerfile','sftp/entrypoint.sh','sftp/sshd_config',
     'media/Dockerfile',
-    'compose.smb.yaml','smb/Dockerfile','smb/entrypoint.sh','smb/smb.conf',
+    'compose.smb.yaml','smb/Dockerfile','smb/entrypoint.sh','smb/smb.conf','smb/limits.py',
 }
 
 def allowed(path:Path)->bool:

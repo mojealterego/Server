@@ -1,3 +1,7 @@
+# OMEGA-X v5.3 + STORAGE-04 development
+
+Bounded parallel CAS replication with compatible manifests, model-only SMB3 identity, Samba VFS audit configuration and persisted dedicated-filesystem capacity checks. See [parallel CAS](docs/BULK_CAS.md) and [SMB access and capacity](docs/SMB_ACCESS_CAPACITY.md). 11 new and 40 selected regression cases passed in split local runs. Physical throughput, live SMB and volume qualification remain open.
+
 # OMEGA-X v5.2b + STORAGE-03 development
 
 Persistent administrator retry ceilings across failover generations, bounded lease-expiry watcher, and content-addressed versioned SMB share snapshots with explicit encrypted-replica export and atomic restore. See [retry policy](docs/RETRY_POLICY.md) and [SMB snapshots](docs/SMB_SNAPSHOTS.md). 18 new and 42 selected regression tests passed; physical failover, actual SMB/Rclone/provider tests and full repository regression remain open.

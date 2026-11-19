@@ -15,6 +15,7 @@ def main(argv=None):
     p.add_argument('--vault',type=Path,required=True)
     p.add_argument('--remote',action='append',required=True,help='Configured Rclone remote:relative-vault; repeat for replicas')
     p.add_argument('--timeout',type=int,default=120)
+    p.add_argument('--workers',type=int,choices=range(1,9),default=4)
     sub=p.add_subparsers(dest='action',required=True)
     a=sub.add_parser('push');a.add_argument('sha256');a.add_argument('--allow-export',action='store_true',required=True)
     a=sub.add_parser('pull');a.add_argument('sha256');a.add_argument('--manifest-sha256',required=True)
@@ -22,7 +23,7 @@ def main(argv=None):
     try:
         replicas=[Replica(r,timeout=args.timeout) for r in args.remote]
         store=ArtifactStore(args.vault)
-        result=push(store,args.sha256,replicas) if args.action=='push' else pull(store,args.sha256,args.manifest_sha256,replicas)
+        result=push(store,args.sha256,replicas,workers=args.workers) if args.action=='push' else pull(store,args.sha256,args.manifest_sha256,replicas,workers=args.workers)
         print(json.dumps(result,sort_keys=True));return 0
     except (ValueError,OSError) as exc:
         print('REPLICATION ERROR: '+str(exc),file=sys.stderr);return 1
