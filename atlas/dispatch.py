@@ -201,7 +201,7 @@ class Coordinator:
     def handle(self,ident,req):
         require(isinstance(req,dict) and isinstance(req.get('op'),str) and req['op'] in OPERATIONS,'Unknown dispatch operation')
         op=req['op'];expected={'op','task','plan'}|OPERATIONS[op]
-        require(set(req)==expected or op=='claim' and set(req)==expected|{'retry'},'Unexpected request fields')
+        require(set(req)==expected or op=='claim' and expected<=set(req)<=expected|{'retry','max_epoch'},'Unexpected request fields')
         require(req['plan']==self.hash and isinstance(req['task'],str),'Plan mismatch')
         tid=req['task']
         with self._open() as lease:
@@ -210,11 +210,19 @@ class Coordinator:
             require(assignment['effective_privacy']!='local_only','Local-only data cannot cross transport')
             task=lease.tasks[tid];budget=assignment['disk_bytes']
             def reply(**data):return {'status':'OK','plan':self.hash,'task':tid,'op':op,**data}
-            if op=='status':return reply(lease=lease.status(tid))
+            if op=='status':
+                def status_snapshot():
+                    row=lease.status(tid)
+                    ready=all(lease.status(dep)['state']=='COMPLETED' for dep in task.get('depends_on',[]))
+                    retryable=row['state']=='FAILED' or row['state']=='LEASED' and row['expires_at']<=time.time()
+                    return reply(lease=row,readiness={'dependencies_complete':ready,'retryable':retryable})
+                return lease._transaction(status_snapshot)
             if op=='claim':
                 require(type(req.get('retry',False)) is bool,'Invalid retry flag')
+                require('max_epoch' not in req or integer(req['max_epoch'],1,10),'Invalid epoch budget')
                 with self._lock(tid):
                     previous=lease.status(tid)
+                    require('max_epoch' not in req or previous['epoch']<req['max_epoch'],'Epoch budget exhausted')
                     require(previous['state']=='PENDING' or req.get('retry',False) and (previous['state']=='FAILED' or previous['state']=='LEASED' and previous['expires_at']<=time.time()),'Task not eligible for claim')
                     inputs={dep:self._input(lease,task,dep) for dep in task.get('depends_on',[])}
                     self._attest(ident,req['envelope'],task,starting=True)

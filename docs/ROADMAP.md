@@ -1,3 +1,9 @@
+# Compute v5.1 — autonomous node scheduler
+
+- Implemented: node-local polling of admitted assigned stages, dependency readiness over mTLS, deterministic planned-slot ordering, privacy exclusion, bounded idle/RPC/preclaim failures, opt-in retry with coordinator-side requested epoch budget, recovery through persisted lease status and local duplicate scheduler exclusion.
+- Verified: 11 new unit tests and 13 dispatch tests (2 new, 11 regression) including concurrent schedulers with real mTLS, CAS and process execution against synthetic LLM endpoints. CLI help and compilation passed. Full repository and device qualification remain open.
+- Open: policy-owned global retry ceilings, adaptive priority/reassignment, service-wide job intake, high availability and physical inference. STORAGE-02 mobile verified cache and STORAGE-03 backup/replication are the next parallel storage increments.
+
 # Parallel roadmap — OMEGA-X compute + OMEGA STORAGE
 
 Storage is a permanent companion workstream, not a replacement for compute. STORAGE-01 implemented: native Samba SMB2/SMB3 service, separate signed compatibility and encrypted shares, read-only models, private IPv4 bind guard, idempotent credentials, acceptance probe. 11 focused local tests passed (SMB client simulated); Docker/Samba and physical client gate NOT_RUN. STORAGE-02 mobile network drives and verified cache; STORAGE-03 CAS/Rclone snapshots and replication; STORAGE-04 ACLs/quotas/audit/SMB3 performance; STORAGE-05 independent storage failover. See docs/SMB_STORAGE.md.

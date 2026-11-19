@@ -1,3 +1,7 @@
+# OMEGA-X v5.1 development — autonomous node scheduler
+
+Certified network stages can now run via `atlas.dispatch_worker --schedule`, with readiness polling, bounded retry, backoff and remote epoch budget checks. See [scheduler runbook](docs/SCHEDULER.md). 11 new unit tests plus 13 dispatch tests passed, including two new integration tests. The parallel SMB2/SMB3 storage track remains active.
+
 # OMEGA-X / OMEGA STORAGE — dual-track development
 
 SMB2/SMB3 native Samba service added as an opt-in VPS profile. Three isolated shares, separate credentials, encrypted SMB3 storage and read-only models. [SMB runbook](docs/SMB_STORAGE.md). 11 focused local tests passed; actual Samba/Docker and device qualification remain open. Autonomous scheduler v5.1 remains open.

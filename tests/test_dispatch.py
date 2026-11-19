@@ -167,3 +167,52 @@ class DispatchTests(unittest.TestCase):
             result=run_task(*args,timeout=15,retry=task=='first')
             self.assertEqual(result['state'],'COMPLETED')
         self.assertEqual(http.prompts,['hello','hello','answer q1']);self.assertIn('phone',renewals);self.assertIn('gpu',renewals)
+    def test_scheduler_status_and_epoch_limit(self):
+        before=self.call('gpu','status','second');self.assertFalse(before['readiness']['dependencies_complete'])
+        a=self.call('phone','claim','first',envelope=self.envelope('phone'),max_epoch=1);cred=self.cred(a)
+        self.assertFalse(self.call('phone','status','first')['readiness']['retryable'])
+        self.call('phone','fail','first',**cred,reason='PROCESS_FAILED')
+        self.assertTrue(self.call('phone','status','first')['readiness']['retryable'])
+        env=self.envelope('phone')
+        with self.assertRaises(DispatchError):self.call('phone','claim','first',envelope=env,retry=True,max_epoch=1)
+        # Rejected budget must not consume the fresh envelope or advance the epoch.
+        a=self.call('phone','claim','first',envelope=env,retry=True,max_epoch=2);self.assertEqual(a['lease']['epoch'],2)
+        self.put(self.cred(a),b'input');self.finish(self.cred(a),b'input')
+        self.assertTrue(self.call('gpu','status','second')['readiness']['dependencies_complete'])
+
+    def test_concurrent_schedulers_actual_workers(self):
+        from atlas.scheduler import schedule_node
+        from atlas.dispatch_worker import run_task
+        from atlas.dispatch import DispatchClient
+        from atlas.runtime_gate import Telemetry
+        from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+        from concurrent.futures import ThreadPoolExecutor
+        import json
+        class Handler(BaseHTTPRequestHandler):
+            def reply(self,x):
+                raw=json.dumps(x).encode();self.send_response(200);self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+            def do_GET(self):self.reply({'status':'ok'} if self.path=='/health' else {'data':[{'id':m} for m in ('q1','q2')]})
+            def do_POST(self):
+                x=json.loads(self.rfile.read(int(self.headers['Content-Length'])));self.server.prompts.append(x['messages'][0]['content']);self.reply({'choices':[{'message':{'content':'answer '+x['model']}}]})
+            def log_message(self,*_):pass
+        http=ThreadingHTTPServer(('127.0.0.1',0),Handler);http.prompts=[];th=threading.Thread(target=http.serve_forever,kwargs={'poll_interval':.02});th.start()
+        def stop():http.shutdown();http.server_close();th.join(3)
+        self.addCleanup(stop)
+        polled=threading.Event()
+        def schedule(node):
+            k=self.keys;client=DispatchClient('127.0.0.1',self.server.server_address[1],client_context(k/'ca.pem',k/(node+'.pem'),k/(node+'.key')),fingerprint(k/'server.pem'),self.plan['certificate_sha256'],timeout=5)
+            work=self.root/node;work.mkdir(mode=0o700);sensor=work/'thermal';sensor.write_text('31000');mem=work/'meminfo';mem.write_text('MemAvailable: 1024000 kB\n')
+            class Probe(Telemetry):
+                def sample(self):return {**super().sample(),'disk_free_bytes':1000000}
+            probe=Probe(sensor,work,meminfo=mem);n=next(x for x in self.nodes if x['id']==node);template={x:n[x] for x in ('id','capabilities','models','ram_headroom_mb')}
+            def status(tid):
+                result=client.call('status',tid)
+                if node=='gpu' and not result['readiness']['dependencies_complete']:polled.set()
+                return result
+            def execute(tid,*,retry,max_epoch):
+                return run_task(client,self.plan,self.tasks,self.nodes,self.catalog,node,tid,{'node':node,'llama_endpoint':f'http://127.0.0.1:{http.server_port}'},work,probe,template,k/(node+'.sign'),timeout=15,retry=retry,max_epoch=max_epoch)
+            return schedule_node(node,self.plan['primary']['assignments'],status,execute,poll_interval=.1,idle_timeout=10)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            gpu=pool.submit(schedule,'gpu');self.assertTrue(polled.wait(5));phone=pool.submit(schedule,'phone')
+            self.assertEqual(phone.result(20)['status'],'COMPLETED');self.assertEqual(gpu.result(20)['status'],'COMPLETED')
+        self.assertEqual(http.prompts,['hello','answer q1']);self.assertEqual(self.call('gpu','status','second')['lease']['epoch'],1)

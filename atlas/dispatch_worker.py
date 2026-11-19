@@ -22,7 +22,7 @@ from .runtime_gate import Telemetry,collect_signed,GateError
 from tools.capctl import read_json,integer
 
 
-def run_task(client,plan,tasks,nodes,catalog,node,tid,deployment,work,probe,template,key,*,timeout=600,retry=False):
+def run_task(client,plan,tasks,nodes,catalog,node,tid,deployment,work,probe,template,key,*,timeout=600,retry=False,max_epoch=None):
     require(type(timeout) in (int,float) and .1<=timeout<=86400,'Invalid worker timeout')
     require(verify_workflow(plan,tasks,nodes,catalog)['primary_feasible'] and plan['admitted'],'Plan not admitted')
     require(client.plan==plan['certificate_sha256'],'Plan pin mismatch')
@@ -52,7 +52,8 @@ def run_task(client,plan,tasks,nodes,catalog,node,tid,deployment,work,probe,temp
             if not 0<=snap['thermal_c']<43 or snap['ram_available_mb']<reserve+(task['ram_mb'] if starting else 0):raise GateError('Local resource policy denied')
             if starting and snap['disk_free_bytes']<budget:raise GateError('Local disk policy denied')
         try:
-            a=client.call('claim',tid,envelope=collect_signed(probe,template,key),retry=retry)
+            budget_fields={} if max_epoch is None else {'max_epoch':max_epoch}
+            a=client.call('claim',tid,envelope=collect_signed(probe,template,key),retry=retry,**budget_fields)
             owner=a['lease'];ttl=a['lease_ttl'];require(integer(ttl,1,120) and owner['node']==node and owner['task']==tid and owner['plan_sha256']==client.plan and owner['state']=='LEASED','Lease binding mismatch')
             cred={k:owner[k] for k in ('token','epoch')};deadline[0]=start+ttl
             require(a['recipe']==r and a['models']=={m:catalog[m] for m in task['models']} and a['output_bytes']==budget and set(a['inputs'])==set(task.get('depends_on',[])),'Remote recipe differs from local admitted plan')
@@ -120,13 +121,28 @@ def main(argv=None):
     for k in ('plan','tasks','nodes','catalog','deployment','work','template','sign-key','thermal-file','ca','cert','key'):
         p.add_argument('--'+k,type=Path,required=True)
     p.add_argument('--cgroup',type=Path);p.add_argument('--host',required=True);p.add_argument('--server-pin',required=True)
-    p.add_argument('--node',required=True);p.add_argument('--task',required=True);p.add_argument('--port',type=int,default=8444)
+    p.add_argument('--node',required=True);mode=p.add_mutually_exclusive_group(required=True);mode.add_argument('--task');mode.add_argument('--schedule',action='store_true');p.add_argument('--port',type=int,default=8444)
+    p.add_argument('--max-attempts',type=int,default=1);p.add_argument('--poll-interval',type=float,default=1);p.add_argument('--idle-timeout',type=float,default=300)
     p.add_argument('--timeout',type=float,default=600);p.add_argument('--rpc-timeout',type=int,default=10);p.add_argument('--retry-failed',action='store_true')
     a=p.parse_args(argv)
     try:
         plan,tasks,nodes,catalog,deployment,template=(read_json(getattr(a,k)) for k in ('plan','tasks','nodes','catalog','deployment','template'))
         ctx=client_context(a.ca,a.cert,a.key);client=DispatchClient(a.host,a.port,ctx,a.server_pin,plan['certificate_sha256'],timeout=a.rpc_timeout)
-        result=run_task(client,plan,tasks,nodes,catalog,a.node,a.task,deployment,a.work,Telemetry(a.thermal_file,a.work,cgroup=a.cgroup),template,a.sign_key,timeout=a.timeout,retry=a.retry_failed)
+        probe=Telemetry(a.thermal_file,a.work,cgroup=a.cgroup)
+        if a.schedule:
+            from .scheduler import schedule_node
+            require(verify_workflow(plan,tasks,nodes,catalog)['primary_feasible'] and plan['admitted'],'Plan not admitted')
+            validate_recipes(tasks,catalog,{x['id']:x for x in plan['primary']['assignments']},allow_cross_node=True)
+            require(template.get('id')==a.node and deployment.get('node')==a.node,'Local deployment identity mismatch')
+            work=a.work.absolute();_private_dir(work)
+            anchor=work/'scheduler.lock-anchor';fd=os.open(anchor,os.O_CREAT|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_RDWR,0o600);os.close(fd)
+            def execute(tid,*,retry,max_epoch):
+                return run_task(client,plan,tasks,nodes,catalog,a.node,tid,deployment,work,probe,template,a.sign_key,timeout=a.timeout,retry=retry,max_epoch=max_epoch)
+            with NodeLock(anchor,a.node):
+                result=schedule_node(a.node,plan['primary']['assignments'],lambda tid:client.call('status',tid),execute,retry_failed=a.retry_failed,max_attempts=a.max_attempts,poll_interval=a.poll_interval,idle_timeout=a.idle_timeout)
+            print(json.dumps(result,sort_keys=True));return 0 if result['status']=='COMPLETED' else 2
+        require(a.max_attempts==1,'--max-attempts is for --schedule')
+        result=run_task(client,plan,tasks,nodes,catalog,a.node,a.task,deployment,a.work,probe,template,a.sign_key,timeout=a.timeout,retry=a.retry_failed)
         print(json.dumps(result,sort_keys=True));return 0
     except KeyboardInterrupt:return 130
     except (ValueError,OSError,RuntimeError,TypeError,KeyError,RecursionError) as exc:
