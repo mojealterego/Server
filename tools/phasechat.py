@@ -15,6 +15,7 @@ from atlas.artifacts import ArtifactStore, ArtifactError
 from atlas.execution import SupervisedExecutor, ExecutionError
 from atlas.llama_job import validate_chat, LlamaJobError
 from atlas.phaselease import LeaseStore, LeaseError
+from atlas.runtime_gate import add_runtime_args, gate_from_args, GateError
 
 def main(argv=None):
     p=argparse.ArgumentParser(description='Run vetted localhost llama-server inference under PHASESHIFT')
@@ -30,6 +31,7 @@ def main(argv=None):
     p.add_argument('--request-timeout',type=int,default=90)
     p.add_argument('--timeout',type=float,default=600)
     p.add_argument('--ttl',type=int,default=30)
+    add_runtime_args(p)
     args=p.parse_args(argv)
     try:
         # Validate local network boundary and input *before* creating a lease.
@@ -56,10 +58,11 @@ def main(argv=None):
         with LeaseStore(args.db,plan,tasks,nodes,catalog,artifacts=cas) as lease:
             result=SupervisedExecutor(lease,cas,args.work).run(
                 args.task,args.node,exe,ttl=args.ttl,timeout_seconds=args.timeout,
-                suffix='.txt',max_log_bytes=32768)
+                suffix='.txt',max_log_bytes=32768,
+                runtime_gate=gate_from_args(args,tasks,nodes))
         print(json.dumps(result,ensure_ascii=False,sort_keys=True))
         return 0
-    except (LlamaJobError,ExecutionError,LeaseError,ArtifactError,OSError,ValueError,TypeError,KeyError) as exc:
+    except (GateError,LlamaJobError,ExecutionError,LeaseError,ArtifactError,OSError,ValueError,TypeError,KeyError) as exc:
         print('OMEGA-PHASECHAT ERROR: '+str(exc),file=sys.stderr)
         return 1
 

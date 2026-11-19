@@ -1,3 +1,7 @@
+# OMEGA-X v4.5 development — LIVE RUNTIME GATE
+
+Optional signed live telemetry admission and continuous local supervision for phaseexec/phasechat. See [runtime gate runbook](docs/RUNTIME_GATE.md). 26 focused local tests passed (including v4.4 tests); no full regression or hardware inference claimed.
+
 # OMEGA-X v4.4 development — CAPCTL
 
 New optional admission gate for PHASESHIFT: Ed25519 signed node declarations, pinned per-node keys, operator capacity limits and durable SQLite replay rejection. See [CAPCTL runbook](docs/CAPCTL.md). Ten focused host tests passed; full repository regression and mobile hardware validation remain pending. Existing v4.3 reports are historical, not results for v4.4.

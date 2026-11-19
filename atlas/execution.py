@@ -15,6 +15,7 @@ import threading
 import time
 from .artifacts import ArtifactStore, ArtifactError, _private_dir
 from .phaselease import LeaseStore, LeaseError
+from .runtime_gate import RuntimeGate, GateError
 
 SUFFIX = re.compile(r'^\.[a-z0-9]{1,8}$')
 
@@ -94,8 +95,18 @@ class SupervisedExecutor:
 
     def run(self, task_id: str, node_id: str, argv: list[str], *,
             ttl: int = 30, timeout_seconds: float = 600,
-            suffix: str = '.bin', max_log_bytes: int = 262144) -> dict:
+            suffix: str = '.bin', max_log_bytes: int = 262144,
+            runtime_gate: RuntimeGate | None = None) -> dict:
         self._check_args(argv,suffix,timeout_seconds,ttl,max_log_bytes)
+        def check_runtime(starting=False):
+            if runtime_gate is not None:
+                try:
+                    if runtime_gate.node['id']!=node_id or runtime_gate.task['id']!=task_id:
+                        raise GateError('GATE_BINDING_MISMATCH')
+                    runtime_gate.check(starting=starting)
+                except GateError as exc:
+                    raise ExecutionError('RUNTIME_GUARD',str(exc)) from exc
+        check_runtime(starting=True)
         claim = self.lease.claim(task_id, node_id, ttl=ttl)
         epoch = claim['epoch']
         nonce = secrets.token_hex(12)
@@ -120,6 +131,7 @@ class SupervisedExecutor:
             log_fd = os.open(log_path,os.O_CREAT|os.O_EXCL|os.O_WRONLY|os.O_NOFOLLOW,0o600)
             with os.fdopen(log_fd,'wb') as log:
                 log_fd = None
+                check_runtime(starting=True)
                 try:
                     proc = subprocess.Popen(command, shell=False, cwd=self.root, env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -143,7 +155,11 @@ class SupervisedExecutor:
                 reader = threading.Thread(target=drain,name='omega-bounded-log',daemon=True)
                 reader.start()
                 heartbeat.start()
+                next_check = time.monotonic()
                 while proc.poll() is None:
+                    if time.monotonic() >= next_check:
+                        check_runtime()
+                        next_check = time.monotonic() + 1.0
                     if lost.is_set():
                         raise ExecutionError('LEASE_LOST','Heartbeat could not renew lease')
                     if time.monotonic() - started >= timeout_seconds:
@@ -158,6 +174,7 @@ class SupervisedExecutor:
                     raise ExecutionError('PROCESS_FAILED',f'Subprocess exit status {proc.returncode}')
                 if not output.is_file() or output.is_symlink():
                     raise ExecutionError('OUTPUT_MISSING','Subprocess did not create a regular output file')
+                check_runtime()
                 try:
                     receipt = self.lease.complete(task_id,node_id,claim['token'],epoch,output)
                 except (ArtifactError, LeaseError, OSError) as exc:

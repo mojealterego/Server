@@ -1,3 +1,9 @@
+# v4.5 development — LIVE RUNTIME GATE
+
+- Implemented: automatic signed collection of local memory, filesystem and configured thermal telemetry; optional cgroup-v2 ceiling; fresh CAPCTL admission at execution; runtime checks before claim, before process spawn, once per second and before result publication; ties gate to task and node.
+- Verified: 26 focused host tests (10 CAPCTL, 12 runtime gate, 4 subprocess tests with controlled lease/CAS doubles). Full integration and hardware evidence remain open. Optional CLI flags wired into phaseexec and phasechat; not exercised end-to-end in the test container.
+- Open: automatic attestation renewal, mandatory enforcement across every runtime entry point, cgroup ancestor discovery and kernel-level enforcement, authenticated physical telemetry, actual S24/VPS tests, remote server cancellation and process recovery.
+
 # v4.4 development — CAPCTL
 
 - Implemented: signed node declarations, operator trust and capacity policy, freshness and atomic persistent replay rejection. Optional verified-node JSON input for PHASESHIFT; 10 focused tests passed on Linux/OpenSSL 3.5.5.

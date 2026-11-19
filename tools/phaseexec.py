@@ -16,6 +16,7 @@ from atlas.cli import _read_json
 from atlas.artifacts import ArtifactStore
 from atlas.execution import SupervisedExecutor, ExecutionError
 from atlas.phaselease import LeaseStore, LeaseError
+from atlas.runtime_gate import add_runtime_args, gate_from_args, GateError
 
 
 def main(argv=None) -> int:
@@ -28,6 +29,7 @@ def main(argv=None) -> int:
     parser.add_argument('--timeout',type=float,default=600)
     parser.add_argument('--suffix',default='.bin')
     parser.add_argument('--max-log-bytes',type=int,default=262144)
+    add_runtime_args(parser)
     parser.add_argument('command',nargs=argparse.REMAINDER)
     args=parser.parse_args(argv)
     command=args.command[1:] if args.command and args.command[0]=='--' else args.command
@@ -40,10 +42,11 @@ def main(argv=None) -> int:
         with LeaseStore(args.db,plan,tasks,nodes,catalog,artifacts=cas) as store:
             result=SupervisedExecutor(store,cas,args.work).run(
                 args.task,args.node,command,ttl=args.ttl,timeout_seconds=args.timeout,
-                suffix=args.suffix,max_log_bytes=args.max_log_bytes)
+                suffix=args.suffix,max_log_bytes=args.max_log_bytes,
+                runtime_gate=gate_from_args(args,tasks,nodes))
         print(json.dumps(result,sort_keys=True,ensure_ascii=False))
         return 0
-    except (ExecutionError,LeaseError,OSError,ValueError,TypeError,KeyError) as exc:
+    except (GateError,ExecutionError,LeaseError,OSError,ValueError,TypeError,KeyError) as exc:
         print(f'OMEGA-EXEC ERROR: {exc}',file=sys.stderr)
         return 1
 
