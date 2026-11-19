@@ -130,7 +130,7 @@ class DispatchClient:
 
 
 class Coordinator:
-    def __init__(self,db,plan,tasks,nodes,catalog,cas,staging,policy,replay,media_tools,*,ttl=60):
+    def __init__(self,db,plan,tasks,nodes,catalog,cas,staging,policy,replay,media_tools,*,ttl=60,max_attempts=3):
         require(integer(ttl,1,120),'Dispatch TTL must be 1..120 seconds')
         self.db=Path(db);self.replay=Path(replay);self.cas=cas;self.ttl=ttl
         _private_dir(self.db.parent);_private_dir(self.replay.parent)
@@ -145,6 +145,7 @@ class Coordinator:
         require(isinstance(policy,dict) and all(n['id'] in policy and policy[n['id']]['trust']==n['trust'] and policy[n['id']]['priority']==n.get('priority',100) for n in self.nodes),'Plan/policy node mismatch')
         staging=Path(staging);staging.mkdir(mode=0o700,exist_ok=True);_private_dir(staging)
         self.staging=staging/self.hash;self.staging.mkdir(mode=0o700,exist_ok=True);_private_dir(self.staging)
+        with self._open() as lease:lease.configure_attempt_limit(max_attempts)
 
     def _open(self):return LeaseStore(self.db,self.plan,self.tasks,self.nodes,self.catalog,artifacts=self.cas)
 
@@ -214,14 +215,16 @@ class Coordinator:
                 def status_snapshot():
                     row=lease.status(tid)
                     ready=all(lease.status(dep)['state']=='COMPLETED' for dep in task.get('depends_on',[]))
+                    remaining=lease._attempt_budget(tid)
                     retryable=row['state']=='FAILED' or row['state']=='LEASED' and row['expires_at']<=time.time()
-                    return reply(lease=row,readiness={'dependencies_complete':ready,'retryable':retryable})
+                    return reply(lease=row,readiness={'dependencies_complete':ready,'retryable':retryable,'remaining_attempts':remaining})
                 return lease._transaction(status_snapshot)
             if op=='claim':
                 require(type(req.get('retry',False)) is bool,'Invalid retry flag')
                 require('max_epoch' not in req or integer(req['max_epoch'],1,10),'Invalid epoch budget')
                 with self._lock(tid):
                     previous=lease.status(tid)
+                    require(lease._attempt_budget(tid)!=0,'Administrator attempt budget exhausted')
                     require('max_epoch' not in req or previous['epoch']<req['max_epoch'],'Epoch budget exhausted')
                     require(previous['state']=='PENDING' or req.get('retry',False) and (previous['state']=='FAILED' or previous['state']=='LEASED' and previous['expires_at']<=time.time()),'Task not eligible for claim')
                     inputs={dep:self._input(lease,task,dep) for dep in task.get('depends_on',[])}
@@ -304,12 +307,12 @@ def main(argv=None):
         for name in ('ca','cert','key'):q.add_argument('--'+name,type=Path,required=True)
         q.add_argument('--port',type=int,default=8444);q.add_argument('--timeout',type=int,default=30)
     for name in ('db','plan','tasks','nodes','catalog','cas','staging','policy','replay','pins','media-tools'):s.add_argument('--'+name,type=Path,required=True)
-    s.add_argument('--bind',default='127.0.0.1');s.add_argument('--allow-network',action='store_true');s.add_argument('--lease-ttl',type=int,default=60)
+    s.add_argument('--bind',default='127.0.0.1');s.add_argument('--allow-network',action='store_true');s.add_argument('--lease-ttl',type=int,default=60);s.add_argument('--max-attempts',type=int,default=3)
     c.add_argument('--host',required=True);c.add_argument('--server-pin',required=True);c.add_argument('--body',type=Path,required=True);c.add_argument('--upload-file',type=Path);c.add_argument('--download-dir',type=Path)
     a=p.parse_args(argv)
     try:
         if a.cmd=='serve':
-            q=Coordinator(a.db,read_json(a.plan),read_json(a.tasks),read_json(a.nodes),read_json(a.catalog),ArtifactStore(a.cas),a.staging,read_json(a.policy),a.replay,read_json(a.media_tools),ttl=a.lease_ttl)
+            q=Coordinator(a.db,read_json(a.plan),read_json(a.tasks),read_json(a.nodes),read_json(a.catalog),ArtifactStore(a.cas),a.staging,read_json(a.policy),a.replay,read_json(a.media_tools),ttl=a.lease_ttl,max_attempts=a.max_attempts)
             with DispatchServer((a.bind,a.port),server_context(a.ca,a.cert,a.key),q,read_json(a.pins),timeout=a.timeout,allow_network=a.allow_network) as srv:
                 print('Dispatch listening on '+str(srv.server_address),file=sys.stderr,flush=True);srv.serve_forever()
         else:

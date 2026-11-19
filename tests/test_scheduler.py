@@ -55,4 +55,11 @@ class ScheduleTests(unittest.TestCase):
     def test_retry_requires_opt_in(self):
         with self.assertRaises(ValueError):self.run_scheduler(max_attempts=3)
 
+    def test_administrator_budget_blocks_without_polling(self):
+        self.states['a']=self.row('a','FAILED',1,retryable=True)
+        self.states['a']['readiness']['remaining_attempts']=0
+        self.states['b']=self.row('b','COMPLETED',1)
+        self.assertEqual(self.run_scheduler(retry_failed=True,max_attempts=3)['reason'],'RETRY_BUDGET_OR_POLICY')
+        self.assertFalse(self.calls);self.assertFalse(self.time.sleeps)
+
 if __name__=='__main__':unittest.main()

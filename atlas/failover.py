@@ -28,9 +28,30 @@ def recover_restart(lease):
     return json.loads(row[0])
 
 
-def prepare_restart(lease,failed,live_nodes,*,restart_completed=False,allow_degraded=False):
+def watch_restart(lease,failed,*,timeout=60,poll=1,clock=time.monotonic,sleep=time.sleep):
+    """Bounded wait for an expired-lease candidate; never perform a cutover."""
+    require(failed in lease.nodes,'Unknown failed node')
+    require(type(timeout) is int and 1<=timeout<=3600 and type(poll) in (int,float) and .1<=poll<=30,'Invalid watch limits')
+    require(all(a['effective_privacy']!='local_only' for a in lease.assignments.values()),'Local-only workflows require separate local recovery')
+    deadline=clock()+timeout
+    while True:
+        def inspect():
+            rows=lease.conn.execute('SELECT state,expires_at,node_id FROM leases WHERE plan_hash=?',(lease.plan_hash,)).fetchall()
+            now=time.time()
+            return {'expired_on_failed':sum(state=='LEASED' and expiry<=now and nid==failed for state,expiry,nid in rows),
+                    'active':sum(state=='LEASED' and expiry>now for state,expiry,_ in rows),
+                    'completed':sum(state=='COMPLETED' for state,_,_ in rows),
+                    'exhausted_tasks':sorted(tid for tid in lease.tasks if lease._attempt_budget(tid)==0)}
+        info=lease._transaction(inspect)
+        if info['active']==0 and info['expired_on_failed']>0 and info['completed']==0 and not info['exhausted_tasks']:
+            return {'status':'CANDIDATE','failed_node':failed,'plan':lease.plan_hash,**info}
+        if clock()>=deadline:return {'status':'TIMEOUT','failed_node':failed,'plan':lease.plan_hash,**info}
+        sleep(min(poll,max(0,deadline-clock())))
+
+
+def prepare_restart(lease,failed,live_nodes,*,restart_completed=False,allow_degraded=False,require_expired=False):
     """One authority/DB. Caller verifies live declarations and quiesces workers."""
-    require(type(restart_completed) is bool and type(allow_degraded) is bool,'Invalid restart authorization')
+    require(type(restart_completed) is bool and type(allow_degraded) is bool and type(require_expired) is bool,'Invalid restart authorization')
     _private_dir(lease.path.parent)
     require(failed in lease.nodes,'Unknown failed node')
     require(all(a['effective_privacy']!='local_only' for a in lease.assignments.values()),'Local-only workflows require separate local recovery')
@@ -59,30 +80,38 @@ def prepare_restart(lease,failed,live_nodes,*,restart_completed=False,allow_degr
     validate_recipes(lease.task_list,lease.catalog,{a['id']:a for a in plan['primary']['assignments']},allow_cross_node=True)
     result={'schema':'omega.restart.v1','predecessor':lease.plan_hash,'failed_node':failed,'nodes':static,'plan':plan}
     def cutover():
-        rows=lease.conn.execute('SELECT state,expires_at FROM leases WHERE plan_hash=?',(lease.plan_hash,)).fetchall()
+        rows=lease.conn.execute('SELECT state,expires_at,node_id FROM leases WHERE plan_hash=?',(lease.plan_hash,)).fetchall()
         now=time.time()
-        require(not any(state=='LEASED' and expiry>now for state,expiry in rows),'Active predecessor leases; cutover denied')
-        require(restart_completed or not any(state=='COMPLETED' for state,_ in rows),'Completed tasks require explicit full-restart authorization')
+        require(not any(state=='LEASED' and expiry>now for state,expiry,_ in rows),'Active predecessor leases; cutover denied')
+        require(restart_completed or not any(state=='COMPLETED' for state,_,_ in rows),'Completed tasks require explicit full-restart authorization')
+        if require_expired:
+            require(any(state=='LEASED' and expiry<=now and nid==failed for state,expiry,nid in rows),'No expired lease on failed node')
+        policy=lease.conn.execute('SELECT root_hash,max_attempts FROM attempt_limits WHERE plan_hash=?',(lease.plan_hash,)).fetchone()
+        if policy is not None:
+            require(all(lease._attempt_budget(tid)>0 for tid in lease.tasks),'Administrator attempt budget exhausted; failover refused')
+            lease.conn.execute('INSERT INTO attempt_limits VALUES(?,?,?)',(plan['certificate_sha256'],*policy))
         lease.conn.execute('INSERT INTO retired_plans VALUES(?,?,?)',(lease.plan_hash,plan['certificate_sha256'],json.dumps(result,sort_keys=True,allow_nan=False)))
         return result
     return lease._transaction(cutover)
 
 
 def main(argv=None):
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('prepare','recover'))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('prepare','recover','watch'))
     for name in ('db','plan','tasks','nodes','catalog'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--failed-node');p.add_argument('--envelope',type=Path,action='append');p.add_argument('--policy',type=Path);p.add_argument('--replay',type=Path)
-    p.add_argument('--confirm-quiesced',action='store_true');p.add_argument('--restart-completed',action='store_true');p.add_argument('--allow-degraded',action='store_true')
+    p.add_argument('--confirm-quiesced',action='store_true');p.add_argument('--restart-completed',action='store_true');p.add_argument('--allow-degraded',action='store_true');p.add_argument('--require-expired',action='store_true')
+    p.add_argument('--watch-timeout',type=int,default=60);p.add_argument('--poll',type=float,default=1)
     a=p.parse_args(argv)
     try:
         with LeaseStore(a.db,read_json(a.plan),read_json(a.tasks),read_json(a.nodes),read_json(a.catalog)) as lease:
             if a.action=='recover':result=recover_restart(lease)
+            elif a.action=='watch':result=watch_restart(lease,a.failed_node,timeout=a.watch_timeout,poll=a.poll)
             else:
                 require(a.confirm_quiesced and a.failed_node and a.envelope and a.policy and a.replay,'Explicit quiescence confirmation and fresh signed declarations required')
                 require(a.db.resolve()!=a.replay.resolve(),'Separate admission database required')
                 live=admit([read_json(x) for x in a.envelope],read_json(a.policy),a.replay,ttl=120)
-                result=prepare_restart(lease,a.failed_node,live,restart_completed=a.restart_completed,allow_degraded=a.allow_degraded)
-        print(json.dumps(result,sort_keys=True));return 0
+                result=prepare_restart(lease,a.failed_node,live,restart_completed=a.restart_completed,allow_degraded=a.allow_degraded,require_expired=a.require_expired)
+        print(json.dumps(result,sort_keys=True));return 2 if result.get('status')=='TIMEOUT' else 0
     except (ValueError,OSError,TypeError,KeyError,sqlite3.Error,RecursionError) as exc:
         print('FAILOVER ERROR: '+str(exc),file=sys.stderr);return 1
 

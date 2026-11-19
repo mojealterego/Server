@@ -1,3 +1,9 @@
+# Compute v5.2b + STORAGE-03 — retry ceilings, failover watch and versioned SMB snapshots
+
+- Compute: persisted administrator attempt ceiling across workflow lineage, coordinator and direct claim enforcement, scheduler budget status, bounded expired-lease candidate detection, transactional expiry-gated cutover. 9 new cases passed. Physical fencing and automatic successor deployment remain open; v5.2 is not a transparent failover release.
+- Storage: versioned quiesced share-content snapshots in separate CAS, empty directories, file deduplication, explicit export to configured crypt remotes, pinned snapshot/object manifests, replica recovery, atomic no-overwrite directory restore. 9 new cases passed. Metadata/ACL restoration, online snapshots, GC/retention and real provider/SMB tests remain open.
+- Regression: 42 existing scheduler, dispatch, failover and recovery cases passed; source subset only. Next compute: bulk CAS transport and HA preparation alongside remaining physical failover gates. Next storage: ACL, quotas, audit and retention; no claim of live SMB snapshot semantics.
+
 # Compute v5.2a + STORAGE-02 — fenced restart and verified SMB cache
 
 - Compute: operator-confirmed adaptive full restart with fresh signed survivor telemetry, conservative replanning, verified successor certificate, atomic durable predecessor retirement, no live-lease takeover and explicit completed-job restart authorization. 9 new tests passed; automatic detection/migration and completed artifact reuse are still open.

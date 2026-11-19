@@ -126,6 +126,9 @@ class LeaseStore:
                 self.conn.execute('''CREATE TABLE IF NOT EXISTS retired_plans (
                     plan_hash TEXT PRIMARY KEY, successor_hash TEXT NOT NULL UNIQUE, payload TEXT NOT NULL
                 )''')
+                self.conn.execute('''CREATE TABLE IF NOT EXISTS attempt_limits (
+                    plan_hash TEXT PRIMARY KEY, root_hash TEXT NOT NULL, max_attempts INTEGER NOT NULL
+                )''')
                 for node in self.nodes.values():
                     cap = node['ram_available_mb'] - node['ram_headroom_mb']
                     observed = self.conn.execute(
@@ -173,12 +176,34 @@ class LeaseStore:
             self.conn.execute('ROLLBACK')
             raise
 
+    def configure_attempt_limit(self, limit):
+        """Persist an immutable administrator ceiling per workflow lineage."""
+        if type(limit) is not int or not 1 <= limit <= 10:
+            raise LeaseError('Attempt limit must be 1..10')
+        def op():
+            row = self.conn.execute('SELECT max_attempts FROM attempt_limits WHERE plan_hash=?', (self.plan_hash,)).fetchone()
+            if row is not None and row[0] != limit:
+                raise LeaseError('Attempt policy already configured with a different limit')
+            self.conn.execute('INSERT OR IGNORE INTO attempt_limits VALUES(?,?,?)', (self.plan_hash,self.plan_hash,limit))
+        self._transaction(op)
+
+    def _attempt_budget(self, task_id):
+        policy = self.conn.execute('SELECT root_hash,max_attempts FROM attempt_limits WHERE plan_hash=?',(self.plan_hash,)).fetchone()
+        if policy is None:
+            return None
+        used = self.conn.execute("""SELECT COALESCE(SUM(l.epoch),0) FROM leases l
+            JOIN attempt_limits a ON a.plan_hash=l.plan_hash WHERE a.root_hash=? AND l.task_id=?""",(policy[0],task_id)).fetchone()[0]
+        return max(0,policy[1]-used)
+
     def claim(self, task_id: str, node_id: str, *, now=None, ttl: int = 60) -> dict:
         clock, ttl = _time(now), _ttl(ttl)
         if task_id not in self.assignments or node_id != self.assignments[task_id]['node']:
             raise LeaseError('Task not assigned to this node')
 
         def op():
+            remaining = self._attempt_budget(task_id)
+            if remaining is not None and remaining == 0:
+                raise LeaseError('Administrator attempt budget exhausted')
             for dep in self.tasks[task_id].get('depends_on', []):
                 upstream = self._get(dep)
                 if upstream is None or upstream[4] != 'COMPLETED':

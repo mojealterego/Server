@@ -33,7 +33,9 @@ def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attem
                         (epoch==0 or r['node']==node) and type(q['dependencies_complete']) is bool and
                         type(q['retryable']) is bool and (not q['retryable'] or state in ('FAILED','LEASED')),
                         'Invalid scheduler status')
-                snapshot[tid]=(state,epoch,q['dependencies_complete'],q['retryable'])
+                remaining=q.get('remaining_attempts')
+                require(remaining is None or integer(remaining,0,10),'Invalid administrator attempt budget')
+                snapshot[tid]=(state,epoch,q['dependencies_complete'],q['retryable'],remaining)
             rows=snapshot;errors=0
         except (ValueError,OSError,RuntimeError,TypeError,KeyError,AttributeError) as exc:
             errors+=1
@@ -45,15 +47,15 @@ def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attem
         if all(r[0]=='COMPLETED' for r in rows.values()):return report('ALL_COMPLETED','COMPLETED')
         terminal=set();runnable=[]
         for tid in ids:
-            state,epoch,ready,retryable=rows[tid];count=failures.get((tid,epoch),0)
+            state,epoch,ready,retryable,remaining=rows[tid];count=failures.get((tid,epoch),0)
             if state=='COMPLETED':terminal.add(tid);continue
-            if count>=3 or state in ('FAILED','LEASED') and retryable and (not retry_failed or epoch>=max_attempts):
+            if (remaining==0 and (state=='PENDING' or retryable)) or count>=3 or state in ('FAILED','LEASED') and retryable and (not retry_failed or epoch>=max_attempts):
                 terminal.add(tid);continue
             if ready and (state=='PENDING' or retryable and retry_failed) and clock()>=due.get(tid,0):runnable.append(tid)
         if len(terminal)==len(ids):return report('RETRY_BUDGET_OR_POLICY')
         if clock()>=deadline:return report('IDLE_TIMEOUT')
         if runnable:
-            tid=runnable[0];state,epoch,_,_=rows[tid]
+            tid=runnable[0];state,epoch,_,_,_=rows[tid]
             try:execute(tid,retry=state!='PENDING',max_epoch=max_attempts)
             except (ValueError,OSError,RuntimeError,TypeError,KeyError):
                 key=(tid,epoch);count=failures.get(key,0)+1;failures[key]=count

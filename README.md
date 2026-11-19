@@ -1,3 +1,7 @@
+# OMEGA-X v5.2b + STORAGE-03 development
+
+Persistent administrator retry ceilings across failover generations, bounded lease-expiry watcher, and content-addressed versioned SMB share snapshots with explicit encrypted-replica export and atomic restore. See [retry policy](docs/RETRY_POLICY.md) and [SMB snapshots](docs/SMB_SNAPSHOTS.md). 18 new and 42 selected regression tests passed; physical failover, actual SMB/Rclone/provider tests and full repository regression remain open.
+
 # OMEGA-X v5.2a + STORAGE-02 development
 
 Fenced operator-confirmed PHASESHIFT restart after node failure and signed per-model SMB cache with Merkle resume and verified replica failover. See [failover](docs/FAILOVER.md) and [storage cache](docs/STORAGE_CACHE.md). 17 new tests and 33 selected regression tests passed. Automatic migration, real SMB/mobile qualification and full repository validation remain open.

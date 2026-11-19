@@ -216,3 +216,13 @@ class DispatchTests(unittest.TestCase):
             gpu=pool.submit(schedule,'gpu');self.assertTrue(polled.wait(5));phone=pool.submit(schedule,'phone')
             self.assertEqual(phone.result(20)['status'],'COMPLETED');self.assertEqual(gpu.result(20)['status'],'COMPLETED')
         self.assertEqual(http.prompts,['hello','answer q1']);self.assertEqual(self.call('gpu','status','second')['lease']['epoch'],1)
+
+    def test_administrator_limit_cannot_be_bypassed_through_tls(self):
+        for epoch in range(1,4):
+            a=self.call('phone','claim','first',envelope=self.envelope('phone'),retry=epoch>1)
+            self.assertEqual(a['lease']['epoch'],epoch)
+            self.call('phone','fail','first',**self.cred(a),reason='PROCESS_FAILED')
+        for kw in ({},{'max_epoch':10}):
+            with self.assertRaises(DispatchError):self.call('phone','claim','first',envelope=self.envelope('phone'),retry=True,**kw)
+        self.assertEqual(self.call('phone','status','first')['readiness']['remaining_attempts'],0)
+        with self.assertRaises(ValueError):Coordinator(self.root/'leases.db',self.plan,self.tasks,self.nodes,self.catalog,self.cas,self.root/'staging',self.policy,self.root/'replay.db',{},ttl=30,max_attempts=4)
