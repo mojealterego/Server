@@ -74,3 +74,18 @@ signature and version pin, corrupt first replica, verified resume, cache hits,
 conflicting final files, private path/bad alias rejection, disk reserve,
 oversized range, timeout and valid subprocess range read. Python compiled.
 No physical Samba, Rclone SMB, Android or AI inference test was performed.
+
+## Verified replica preference (STORAGE-06)
+
+Each serial staging invocation begins with the first enrolled alias.
+After accepting a block with exact length and SHA-256, it tries that
+alias first for the next required block. If it fails, each other
+enrolled alias is still attempted at most once for that block, in
+original catalog order. A different valid block changes the preference.
+No global health registry, persistence of preference, speculative
+parallel download or trust expansion is introduced. Every block and the
+final file still undergo integrity checks; cache hits use no network.
+For three required blocks with a permanently failing first replica and
+one healthy replica this reduces reads from six to four. The real
+Fabric/cache integration also checks wrong backend rejection and
+offline cache operation with an emulated Rclone process.

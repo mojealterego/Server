@@ -20,7 +20,7 @@ class StorageCacheTests(unittest.TestCase):
     def test_corrupt_first_replica_and_cache_hit(self):
         calls=[]
         def reader(path,o,n):calls.append((path,o,n));return b'bad' if path.startswith('a:') else self.data[o:o+n]
-        r=self.run_stage(reader);self.assertEqual(Path(r['path']).read_bytes(),self.data);self.assertEqual(len(calls),4)
+        r=self.run_stage(reader);self.assertEqual(Path(r['path']).read_bytes(),self.data);self.assertEqual(len(calls),3)
         r=self.run_stage(lambda *_:self.fail('cache hit read network'));self.assertEqual(r['status'],'ALREADY_PRESENT')
     def test_resume_partial_and_reject_conflicting_final(self):
         def interrupted(path,o,n):

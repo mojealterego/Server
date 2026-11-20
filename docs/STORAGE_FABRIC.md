@@ -56,3 +56,15 @@ probe. This is configuration validation, not proof of SMB dialect or
 transport security; the Rclone executable, environment and config are
 trusted and must not change during staging. See
 https://rclone.org/commands/rclone_config_redacted/.
+
+## Model staging qualification increment
+
+The default stage path now inherits the serial verified-replica
+preference documented in [STORAGE_CACHE.md](STORAGE_CACHE.md). Two
+focused integration cases execute the real Fabric, storage_cache and
+Merkle implementations, real OpenSSL Ed25519 operations, private files
+and subprocess Rclone fixtures. They verify backend rejection, replica
+fallback, verified offline cache reuse and no publication when all
+replicas fail. These do not establish actual SMB dialect negotiation,
+physical replica independence or real Rclone/provider operation.
+Recovery-generation integration and existing external gates stay open.

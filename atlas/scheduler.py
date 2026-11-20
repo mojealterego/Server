@@ -7,12 +7,16 @@ from tools.capctl import integer
 
 def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attempts=1,
                   poll_interval=1,idle_timeout=300,max_rpc_errors=5,
-                  clock=time.monotonic,sleep=time.sleep):
+                  clock=time.monotonic,sleep=time.sleep,max_poll_interval=None):
     require(type(retry_failed) is bool and integer(max_attempts,1,10) and
             (retry_failed or max_attempts==1),'Retry budget requires explicit opt-in')
     require(type(poll_interval) in (int,float) and .1<=poll_interval<=30 and
             type(idle_timeout) in (int,float) and 1<=idle_timeout<=86400 and
             integer(max_rpc_errors,1,10),'Invalid scheduler limits')
+    if max_poll_interval is None:max_poll_interval=poll_interval
+    require(type(max_poll_interval) in (int,float) and poll_interval<=max_poll_interval<=30,
+            'Invalid maximum polling interval')
+    delay=poll_interval
     selected=sorted((a for a in assignments if a['node']==node and a['effective_privacy']!='local_only'),
                     key=lambda a:(a['start_slot'],a['end_slot'],a['id']))
     ids=[a['id'] for a in selected];require(ids and len(ids)==len(set(ids)),'No unique dispatch tasks for node')
@@ -43,7 +47,7 @@ def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attem
             if clock()>=deadline:return report('IDLE_TIMEOUT')
             pause(min(30,poll_interval*(2**(errors-1))));continue
         if rows!=last:
-            deadline=clock()+idle_timeout;last=rows.copy()
+            deadline=clock()+idle_timeout;last=rows.copy();delay=poll_interval
         if all(r[0]=='COMPLETED' for r in rows.values()):return report('ALL_COMPLETED','COMPLETED')
         terminal=set();runnable=[]
         for tid in ids:
@@ -55,6 +59,7 @@ def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attem
         if len(terminal)==len(ids):return report('RETRY_BUDGET_OR_POLICY')
         if clock()>=deadline:return report('IDLE_TIMEOUT')
         if runnable:
+            delay=poll_interval
             tid=runnable[0];state,epoch,_,_,_=rows[tid]
             try:execute(tid,retry=state!='PENDING',max_epoch=max_attempts)
             except (ValueError,OSError,RuntimeError,TypeError,KeyError):
@@ -64,4 +69,13 @@ def schedule_node(node,assignments,status,execute,*,retry_failed=False,max_attem
                 # Never busy-spin if a completion response races visibility.
                 due[tid]=clock()+poll_interval
             continue
-        pause(poll_interval)
+        if max_poll_interval==poll_interval:
+            pause(poll_interval)
+        else:
+            # Do not delay an eligible retry past its existing backoff deadline.
+            now=clock()
+            wake=min((due[tid]-now for tid in ids if tid not in terminal and
+                      rows[tid][2] and (rows[tid][0]=='PENDING' or rows[tid][3] and retry_failed) and
+                      due.get(tid,0)>now),default=delay)
+            pause(min(delay,wake))
+            delay=min(max_poll_interval,delay*2)

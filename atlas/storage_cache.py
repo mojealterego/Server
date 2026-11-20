@@ -99,12 +99,17 @@ def stage(envelope,pin,expected_sha,cache,remotes,*,reader=read_range,reserve_by
         if not final.exists() and not final.is_symlink():
             # Conservative: reserve full object even if some partial bytes already exist.
             require(shutil.disk_usage(cache)[2]>=m['size_bytes']+reserve_bytes,'Insufficient cache free space')
+        # Serial staging: prefer the last replica that supplied a verified block.
+        preferred=remotes[0]
         def fetch(offset,length):
+            nonlocal preferred
             want=m['chunks'][offset//DEFAULT_CHUNK]
-            for alias in remotes:
+            for alias in (preferred,*(r for r in remotes if r!=preferred)):
                 try:
                     data=reader(alias+':omega-models/'+m['filename'],offset,length)
-                    if isinstance(data,bytes) and len(data)==length and hashlib.sha256(data).hexdigest()==want:return data
+                    if isinstance(data,bytes) and len(data)==length and hashlib.sha256(data).hexdigest()==want:
+                        preferred=alias
+                        return data
                 except (ValueError,OSError,RuntimeError,subprocess.SubprocessError):pass
             raise CacheError('No replica supplied a valid block at offset '+str(offset))
         result=stage_from_reader(final,m,fetch)

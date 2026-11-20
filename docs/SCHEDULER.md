@@ -45,3 +45,23 @@ two concurrent schedulers reaching actual worker processes, SQLite and
 CAS over a synthetic HTTP LLM endpoint. Compilation and CLI help passed.
 No full repository regression, real model inference, hardware or VPS
 deployment was performed in this increment.
+
+## v5.5a — opt-in idle polling adaptation
+
+Add `--max-poll-interval 8` to the existing worker `--schedule`
+invocation (with `--poll-interval 1`, for example). Without the option
+or if its value equals the base interval, previous fixed idle polling
+is retained. The cap must be between the base interval and 30 seconds.
+Single-task mode rejects this option.
+
+When no work is ready, the delay doubles to the cap, clipped to the
+idle deadline and existing eligible retry due-time. A changed valid
+snapshot or stage execution resets the delay to the base interval.
+RPC failure backoff and error limits are unchanged; the new cap applies
+only to idle polling. No change to the lease heartbeat, plan, resource
+or retry policy. A larger cap trades fewer queries for a greater
+readiness detection latency (in-flight RPC times are additional).
+
+Deterministic single-task example: over 20 simulated idle seconds,
+fixed one-second polling issues 21 status calls; base 1 s/cap 8 s
+issues 6. These are fixture counts, not hardware power or speed results.

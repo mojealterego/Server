@@ -1,0 +1,60 @@
+Base source commit: a12e2e29e544df7b3e37e18ec8a559fd50ed8fcc
+Environment: Linux x86_64, Python 3.13.5, OpenSSL 3.5.5 (27 Jan 2026).
+RED: scheduler new suite (5 cases) on unmodified scheduler failed with
+9 errors (new max_poll_interval argument missing, including subcases).
+SMB new suite on unmodified cache: 3 cases, 2 failed expected read order;
+all replicas corrupt already passed. Existing assertion for replica
+read count changed from 4 to 3 to match verified preference behavior.
+GREEN command: python -m unittest discover -s tests -v
+Scope: recovered subset. Exact Git blobs for scheduler, dispatch_worker,
+storage_cache, storage_fabric, merkle, test_scheduler, test_storage_cache
+were checked before modifications; dispatch.py error/require,
+tools/capctl.py and atlas/artifacts.py helper functions were extracted
+from pinned source for execution. No replacement helper modules are
+published. Full checkout blocked: git ls-remote failed DNS.
+Scheduler tests use deterministic clocks/callbacks. Actual Fabric/cache
+tests use real files/OpenSSL/Merkle and a controlled Rclone subprocess.
+No full remote dispatch execution, real etcd, Samba, Rclone, Docker,
+GPU or S24 qualification. No GitHub Actions or YepCode used.
+python -m compileall -q atlas tools tests: exit 0
+python -m atlas.storage_cache --help: exit 0
+python -m atlas.storage_fabric --help: exit 0
+Single-task idle fixture:
+max_poll_interval=None rpc_calls=21 sleeps=[1 repeated 20 times] reason=IDLE_TIMEOUT
+max_poll_interval=8 rpc_calls=6 sleeps=[1,2,4,8,5] reason=IDLE_TIMEOUT
+
+test_adaptive_idle_backoff_is_bounded (test_adaptive_scheduler.AdaptiveSchedulerTests.test_adaptive_idle_backoff_is_bounded) ... ok
+test_fixed_default_unchanged (test_adaptive_scheduler.AdaptiveSchedulerTests.test_fixed_default_unchanged) ... ok
+test_invalid_caps_rejected (test_adaptive_scheduler.AdaptiveSchedulerTests.test_invalid_caps_rejected) ... ok
+test_readiness_triggers_immediate_execution (test_adaptive_scheduler.AdaptiveSchedulerTests.test_readiness_triggers_immediate_execution) ... ok
+test_rpc_failure_budget_does_not_change (test_adaptive_scheduler.AdaptiveSchedulerTests.test_rpc_failure_budget_does_not_change) ... ok
+test_all_enrolled_backends_fail_without_publication (test_fabric_cache_integration.FabricCacheIntegrationTests.test_all_enrolled_backends_fail_without_publication) ... ok
+test_verified_stage_rejects_wrong_backend_and_prefers_healthy (test_fabric_cache_integration.FabricCacheIntegrationTests.test_verified_stage_rejects_wrong_backend_and_prefers_healthy) ... ok
+test_all_replicas_corrupt_never_publish (test_replica_preference.ReplicaPreferenceTests.test_all_replicas_corrupt_never_publish) ... ok
+test_last_verified_replica_preferred_and_offline_cache (test_replica_preference.ReplicaPreferenceTests.test_last_verified_replica_preferred_and_offline_cache) ... ok
+test_preferred_failure_falls_back_and_switches (test_replica_preference.ReplicaPreferenceTests.test_preferred_failure_falls_back_and_switches) ... ok
+test_administrator_budget_blocks_without_polling (test_scheduler.ScheduleTests.test_administrator_budget_blocks_without_polling) ... ok
+test_explicit_retry_and_epoch_cap (test_scheduler.ScheduleTests.test_explicit_retry_and_epoch_cap) ... ok
+test_live_lease_never_retried (test_scheduler.ScheduleTests.test_live_lease_never_retried) ... ok
+test_lost_completion_response_reconciles (test_scheduler.ScheduleTests.test_lost_completion_response_reconciles) ... ok
+test_malformed_readiness_fail_closed (test_scheduler.ScheduleTests.test_malformed_readiness_fail_closed) ... ok
+test_no_implicit_retry (test_scheduler.ScheduleTests.test_no_implicit_retry) ... ok
+test_pending_dependency_has_idle_limit (test_scheduler.ScheduleTests.test_pending_dependency_has_idle_limit) ... ok
+test_preclaim_error_backpressure (test_scheduler.ScheduleTests.test_preclaim_error_backpressure) ... ok
+test_priority_and_privacy (test_scheduler.ScheduleTests.test_priority_and_privacy) ... ok
+test_retry_requires_opt_in (test_scheduler.ScheduleTests.test_retry_requires_opt_in) ... ok
+test_rpc_backoff (test_scheduler.ScheduleTests.test_rpc_backoff) ... ok
+test_wait_for_remote_dependency (test_scheduler.ScheduleTests.test_wait_for_remote_dependency) ... ok
+test_bounded_subprocess (test_storage_cache.StorageCacheTests.test_bounded_subprocess) ... ok
+test_corrupt_first_replica_and_cache_hit (test_storage_cache.StorageCacheTests.test_corrupt_first_replica_and_cache_hit) ... ok
+test_disk_reserve_blocks_before_read (test_storage_cache.StorageCacheTests.test_disk_reserve_blocks_before_read) ... ok
+test_public_cache_and_bad_remotes (test_storage_cache.StorageCacheTests.test_public_cache_and_bad_remotes) ... ok
+test_range_success_from_real_subprocess (test_storage_cache.StorageCacheTests.test_range_success_from_real_subprocess) ... ok
+test_refuse_non_model (test_storage_cache.StorageCacheTests.test_refuse_non_model) ... ok
+test_resume_partial_and_reject_conflicting_final (test_storage_cache.StorageCacheTests.test_resume_partial_and_reject_conflicting_final) ... ok
+test_signature_and_hash_pin (test_storage_cache.StorageCacheTests.test_signature_and_hash_pin) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 10.626s
+
+OK

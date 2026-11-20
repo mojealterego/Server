@@ -123,9 +123,11 @@ def main(argv=None):
     p.add_argument('--cgroup',type=Path);p.add_argument('--host',required=True);p.add_argument('--server-pin',required=True)
     p.add_argument('--node',required=True);mode=p.add_mutually_exclusive_group(required=True);mode.add_argument('--task');mode.add_argument('--schedule',action='store_true');p.add_argument('--port',type=int,default=8444)
     p.add_argument('--max-attempts',type=int,default=1);p.add_argument('--poll-interval',type=float,default=1);p.add_argument('--idle-timeout',type=float,default=300)
+    p.add_argument('--max-poll-interval',type=float,help='Opt-in adaptive idle polling cap (seconds; <=30)')
     p.add_argument('--timeout',type=float,default=600);p.add_argument('--rpc-timeout',type=int,default=10);p.add_argument('--retry-failed',action='store_true')
     a=p.parse_args(argv)
     try:
+        require(a.schedule or a.max_poll_interval is None,'--max-poll-interval is for --schedule')
         plan,tasks,nodes,catalog,deployment,template=(read_json(getattr(a,k)) for k in ('plan','tasks','nodes','catalog','deployment','template'))
         ctx=client_context(a.ca,a.cert,a.key);client=DispatchClient(a.host,a.port,ctx,a.server_pin,plan['certificate_sha256'],timeout=a.rpc_timeout)
         probe=Telemetry(a.thermal_file,a.work,cgroup=a.cgroup)
@@ -139,7 +141,7 @@ def main(argv=None):
             def execute(tid,*,retry,max_epoch):
                 return run_task(client,plan,tasks,nodes,catalog,a.node,tid,deployment,work,probe,template,a.sign_key,timeout=a.timeout,retry=retry,max_epoch=max_epoch)
             with NodeLock(anchor,a.node):
-                result=schedule_node(a.node,plan['primary']['assignments'],lambda tid:client.call('status',tid),execute,retry_failed=a.retry_failed,max_attempts=a.max_attempts,poll_interval=a.poll_interval,idle_timeout=a.idle_timeout)
+                result=schedule_node(a.node,plan['primary']['assignments'],lambda tid:client.call('status',tid),execute,retry_failed=a.retry_failed,max_attempts=a.max_attempts,poll_interval=a.poll_interval,idle_timeout=a.idle_timeout,max_poll_interval=a.max_poll_interval)
             print(json.dumps(result,sort_keys=True));return 0 if result['status']=='COMPLETED' else 2
         require(a.max_attempts==1,'--max-attempts is for --schedule')
         result=run_task(client,plan,tasks,nodes,catalog,a.node,a.task,deployment,a.work,probe,template,a.sign_key,timeout=a.timeout,retry=a.retry_failed)
