@@ -1,0 +1,45 @@
+Base source commit: 69f7797aabbe25b62af3528a6da457b8027d56e0
+Scope: two new modules, unit tests and six local mTLS socket tests.
+Command: python3 -m unittest discover -s tests -p 'test_*.py' -v
+Only the new tests were present in the local source subset. No full repository
+checkout: git ls-remote failed DNS. Existing dispatch integration and storage
+adapters were inspected against the pinned upstream source, not executed.
+Commands: python3 -m compileall -q atlas tests
+python3 -m atlas.distributed_authority --help
+python3 -m atlas.storage_fabric --help
+All three commands exited 0 on the new source subset.
+No actual etcd binary, Samba, Docker, Rclone providers, S24, or physical fencing
+were executed. TLS tests used a local HTTP server with real mutual TLS and an
+atomic transaction fixture, not an actual etcd node. Storage routing tests use
+controlled adapter doubles. Full gates remain OPEN; do not claim production PASS.
+Python 3.13.5
+Linux x86_64
+OpenSSL 3.5.5 27 Jan 2026 (Library: OpenSSL 3.5.5 27 Jan 2026)
+test_oversize_body_rejected (test_authority_tls.GatewayTests.test_oversize_body_rejected) ... ok
+test_real_mtls_and_transfer (test_authority_tls.GatewayTests.test_real_mtls_and_transfer) ... ok
+test_redirect_rejected (test_authority_tls.GatewayTests.test_redirect_rejected) ... ok
+test_untrusted_certificate_rejected (test_authority_tls.GatewayTests.test_untrusted_certificate_rejected) ... ok
+test_wrong_cluster_cannot_mutate (test_authority_tls.GatewayTests.test_wrong_cluster_cannot_mutate) ... ok
+test_wrong_hostname_rejected (test_authority_tls.GatewayTests.test_wrong_hostname_rejected) ... ok
+test_cluster_mismatch (test_distributed_authority.AuthorityTests.test_cluster_mismatch) ... ok
+test_concurrent_bootstrap_only_one (test_distributed_authority.AuthorityTests.test_concurrent_bootstrap_only_one) ... ok
+test_invalid_inputs (test_distributed_authority.AuthorityTests.test_invalid_inputs) ... ok
+test_lost_reply_does_not_allow_second_bootstrap (test_distributed_authority.AuthorityTests.test_lost_reply_does_not_allow_second_bootstrap) ... ok
+test_network_failure_never_grants (test_distributed_authority.AuthorityTests.test_network_failure_never_grants) ... ok
+test_non_expiring_key (test_distributed_authority.AuthorityTests.test_non_expiring_key) ... ok
+test_stale_transfer_rejected (test_distributed_authority.AuthorityTests.test_stale_transfer_rejected) ... ok
+test_transfer_requires_fencing_and_latest (test_distributed_authority.AuthorityTests.test_transfer_requires_fencing_and_latest) ... ok
+test_stale_or_unreachable_registry_rejects_before_dispatch (test_distributed_authority.GuardTests.test_stale_or_unreachable_registry_rejects_before_dispatch) ... ok
+test_catalog_pin_is_required (test_storage_fabric.FabricTests.test_catalog_pin_is_required) ... ok
+test_input_mutation_does_not_change_routing (test_storage_fabric.FabricTests.test_input_mutation_does_not_change_routing) ... ok
+test_mismatched_stage_receipt_rejected (test_storage_fabric.FabricTests.test_mismatched_stage_receipt_rejected) ... ok
+test_model_routes_only_to_enrolled_pins (test_storage_fabric.FabricTests.test_model_routes_only_to_enrolled_pins) ... ok
+test_recovery_routes_only_current_generation (test_storage_fabric.FabricTests.test_recovery_routes_only_current_generation) ... ok
+test_reject_path_injection_duplicate_alias_and_wrong_schema (test_storage_fabric.FabricTests.test_reject_path_injection_duplicate_alias_and_wrong_schema) ... ok
+test_unknown_model_never_calls_backend (test_storage_fabric.FabricTests.test_unknown_model_never_calls_backend) ... ok
+test_wrong_recovery_receipt_fails (test_storage_fabric.FabricTests.test_wrong_recovery_receipt_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 2.891s
+
+OK
