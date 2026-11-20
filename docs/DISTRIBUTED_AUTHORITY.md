@@ -51,3 +51,16 @@ partition/TOCTOU, cross-host service integration and zero-RPO evidence
 remain open. No production HA certification is claimed.
 
 Protocol reference: https://etcd.io/docs/v3.6/dev-guide/api_grpc_gateway/
+
+## Admission hardening
+
+The range response must include a valid header revision, a consistent
+count if present, no pagination, and a modification revision no greater
+than the reported cluster revision. A successfully observed absent or
+different grant irreversibly revokes the running guard. A stale concurrent
+observation cannot clear that revocation. Restart only with an independently
+verified current grant after investigation. A transient transport or malformed
+response denies the request without deciding ownership. This latch is
+process-local; it cannot detect a rollback never observed by this process
+and does not fence in-flight side effects or survive restart. All previous
+operator fencing and latest-state requirements still apply.

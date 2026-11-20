@@ -42,3 +42,17 @@ storage, promote a live share, manage ACL/quota/GC/retention, provide
 transparent SMB failover or qualify physical devices/providers. Local
 routing tests used controlled adapter doubles; actual upstream cache and
 recovery adapters were inspected but not exercised in this increment.
+
+## SMB backend preflight
+
+On the first attempted range read from each alias, the production Fabric
+reader checks `rclone config redacted <alias>`; the command must be supported
+by the installed Rclone. It requires a single matching INI section with
+type=smb, rejects external remote type environment overrides, caps output
+at 64 KiB and uses a 10-second deadline. The output is never logged.
+An unsuccessful alias is excluded for the current staging invocation;
+retry with a new invocation after repair. Cache hits use no remote config
+probe. This is configuration validation, not proof of SMB dialect or
+transport security; the Rclone executable, environment and config are
+trusted and must not change during staging. See
+https://rclone.org/commands/rclone_config_redacted/.

@@ -11,6 +11,7 @@ import re
 import secrets
 import ssl
 import sys
+import threading
 from urllib.parse import urlsplit
 
 IDENT=re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z')
@@ -76,14 +77,16 @@ class Authority:
         return {'schema':'omega.authority.v1','node':node,'checkpoint_sha256':pin,'nonce':nonce}
     def current(self):
         out=self._call('/v3/kv/range',{'key':self.key,'serializable':False})
+        revision=number(out['header'].get('revision'))
         rows=out.get('kvs',[]); require(isinstance(rows,list) and len(rows)<=1,'Invalid authority response')
+        require(out.get('more',False) is False and number(out.get('count',len(rows)),0)==len(rows),'Inconsistent authority range')
         if not rows:return None
         try:
             row=rows[0];require(row['key']==self.key and number(row.get('lease','0'),0)==0,'Authority must not expire')
             raw=base64.b64decode(row['value'],validate=True); require(len(raw)<=4096,'Oversized authority record')
             doc=json.loads(raw); require(isinstance(doc,dict) and set(doc)=={'schema','node','checkpoint_sha256','nonce'} and doc['schema']=='omega.authority.v1','Invalid record')
             self._record(doc['node'],doc['checkpoint_sha256'],doc['nonce'])
-            return Grant(doc['node'],doc['checkpoint_sha256'],doc['nonce'],number(row['mod_revision']))
+            return Grant(doc['node'],doc['checkpoint_sha256'],doc['nonce'],number(row['mod_revision'],maximum=revision))
         except (ValueError,TypeError,KeyError) as exc: raise AuthorityError('Invalid persisted authority record') from exc
     def _write(self,node,pin,compare):
         doc=self._record(node,pin,secrets.token_hex(32))
@@ -107,8 +110,17 @@ class AuthorityGuard:
     """Fresh, linearizable admission check. NOT a distributed side-effect fence."""
     def __init__(self,authority:Authority,expected:Grant):
         self.authority=authority;self.expected=expected
+        self._lock=threading.Lock();self._revoked=False
     def check(self):
-        require(self.authority.current()==self.expected,'Coordinator grant is stale or absent')
+        with self._lock:
+            require(not self._revoked,'Coordinator grant previously revoked; restart required')
+        # Do not serialize network requests under a process-wide mutex.
+        observed=self.authority.current()
+        with self._lock:
+            # An unreachable registry denies the request without deciding ownership.
+            # A confirmed different or missing grant permanently revokes this process.
+            if observed!=self.expected:self._revoked=True
+            require(not self._revoked,'Coordinator grant is stale or absent; restart required')
     @classmethod
     def from_config(cls,doc):
         fields={'endpoint','ca','cert','key','namespace','cluster_id','grant'}

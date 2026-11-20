@@ -7,12 +7,12 @@ from atlas.distributed_authority import Authority, AuthorityError
 class TxnFixture:
     """Atomic in-memory fixture for the etcd JSON contract; not a real etcd server."""
     def __init__(self):
-        self.lock=threading.Lock(); self.revision=0; self.row=None; self.fail=False
+        self.lock=threading.Lock(); self.revision=1; self.row=None; self.fail=False
     def __call__(self,path,body):
         with self.lock:
             if self.fail: raise OSError('network down')
             if path=='/v3/kv/range':
-                return {'header':{'cluster_id':'42'},'kvs':[self.row] if self.row else []}
+                return {'header':{'cluster_id':'42','revision':str(self.revision)},'kvs':[self.row] if self.row else [],'count':'1' if self.row else '0'}
             cmp=body['compare'][0]; mod=int(self.row['mod_revision']) if self.row else 0
             ok=(cmp['target']=='VERSION' and self.row is None) or (cmp['target']=='MOD' and int(cmp['mod_revision'])==mod and mod>0)
             if ok:

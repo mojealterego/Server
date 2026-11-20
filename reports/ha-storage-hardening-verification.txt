@@ -1,0 +1,51 @@
+Base: b5b40dfdbf6f8aeac7254ed4e7e3a849e3bf2034
+Scope: recovered source subset; tests imported from the pinned commit and new regression cases.
+RED: 8 initial cases, 6 failed assertions and 9 subtest errors (missing SMB helpers).
+GREEN: python3 -m unittest discover -s tests -p test_*.py -v
+34 tests passed; six existing local mTLS tests with emulated etcd.
+Rclone config tests use real local subprocesses with an emulated executable; not real SMB.
+No actual etcd, Samba, Rclone, Docker, S24 or full checkout; git ls-remote fails DNS.
+python3 -m compileall -q atlas tests: exit 0
+python3 -m atlas.distributed_authority --help: exit 0
+python3 -m atlas.storage_fabric --help: exit 0
+Linux x86_64 Python 3.13.5
+OpenSSL 3.5.5 27 Jan 2026 (Library: OpenSSL 3.5.5 27 Jan 2026)
+test_oversize_body_rejected (test_authority_tls.GatewayTests.test_oversize_body_rejected) ... ok
+test_real_mtls_and_transfer (test_authority_tls.GatewayTests.test_real_mtls_and_transfer) ... ok
+test_redirect_rejected (test_authority_tls.GatewayTests.test_redirect_rejected) ... ok
+test_untrusted_certificate_rejected (test_authority_tls.GatewayTests.test_untrusted_certificate_rejected) ... ok
+test_wrong_cluster_cannot_mutate (test_authority_tls.GatewayTests.test_wrong_cluster_cannot_mutate) ... ok
+test_wrong_hostname_rejected (test_authority_tls.GatewayTests.test_wrong_hostname_rejected) ... ok
+test_cluster_mismatch (test_distributed_authority.AuthorityTests.test_cluster_mismatch) ... ok
+test_concurrent_bootstrap_only_one (test_distributed_authority.AuthorityTests.test_concurrent_bootstrap_only_one) ... ok
+test_invalid_inputs (test_distributed_authority.AuthorityTests.test_invalid_inputs) ... ok
+test_lost_reply_does_not_allow_second_bootstrap (test_distributed_authority.AuthorityTests.test_lost_reply_does_not_allow_second_bootstrap) ... ok
+test_network_failure_never_grants (test_distributed_authority.AuthorityTests.test_network_failure_never_grants) ... ok
+test_non_expiring_key (test_distributed_authority.AuthorityTests.test_non_expiring_key) ... ok
+test_stale_transfer_rejected (test_distributed_authority.AuthorityTests.test_stale_transfer_rejected) ... ok
+test_transfer_requires_fencing_and_latest (test_distributed_authority.AuthorityTests.test_transfer_requires_fencing_and_latest) ... ok
+test_stale_or_unreachable_registry_rejects_before_dispatch (test_distributed_authority.GuardTests.test_stale_or_unreachable_registry_rejects_before_dispatch) ... ok
+test_inconsistent_range_response_rejected (test_ha_storage_hardening.AuthorityHardeningTests.test_inconsistent_range_response_rejected) ... ok
+test_inflight_old_observation_cannot_clear_revocation (test_ha_storage_hardening.AuthorityHardeningTests.test_inflight_old_observation_cannot_clear_revocation) ... ok
+test_missing_grant_requires_restart_even_if_restored (test_ha_storage_hardening.AuthorityHardeningTests.test_missing_grant_requires_restart_even_if_restored) ... ok
+test_observed_revocation_is_sticky_after_rollback (test_ha_storage_hardening.AuthorityHardeningTests.test_observed_revocation_is_sticky_after_rollback) ... ok
+test_transient_outage_allows_same_grant_to_recover (test_ha_storage_hardening.AuthorityHardeningTests.test_transient_outage_allows_same_grant_to_recover) ... ok
+test_config_deadline_kills_subprocess (test_ha_storage_hardening.SMBEnrollmentTests.test_config_deadline_kills_subprocess) ... ok
+test_default_stage_receives_enrolled_reader_without_eager_network (test_ha_storage_hardening.SMBEnrollmentTests.test_default_stage_receives_enrolled_reader_without_eager_network) ... ok
+test_reader_checks_only_used_replicas_once (test_ha_storage_hardening.SMBEnrollmentTests.test_reader_checks_only_used_replicas_once) ... ok
+test_real_subprocess_accepts_smb (test_ha_storage_hardening.SMBEnrollmentTests.test_real_subprocess_accepts_smb) ... ok
+test_real_subprocess_rejects_wrong_backend_or_ambiguous_config (test_ha_storage_hardening.SMBEnrollmentTests.test_real_subprocess_rejects_wrong_backend_or_ambiguous_config) ... ok
+test_type_environment_override_rejected_before_process (test_ha_storage_hardening.SMBEnrollmentTests.test_type_environment_override_rejected_before_process) ... ok
+test_catalog_pin_is_required (test_storage_fabric.FabricTests.test_catalog_pin_is_required) ... ok
+test_input_mutation_does_not_change_routing (test_storage_fabric.FabricTests.test_input_mutation_does_not_change_routing) ... ok
+test_mismatched_stage_receipt_rejected (test_storage_fabric.FabricTests.test_mismatched_stage_receipt_rejected) ... ok
+test_model_routes_only_to_enrolled_pins (test_storage_fabric.FabricTests.test_model_routes_only_to_enrolled_pins) ... ok
+test_recovery_routes_only_current_generation (test_storage_fabric.FabricTests.test_recovery_routes_only_current_generation) ... ok
+test_reject_path_injection_duplicate_alias_and_wrong_schema (test_storage_fabric.FabricTests.test_reject_path_injection_duplicate_alias_and_wrong_schema) ... ok
+test_unknown_model_never_calls_backend (test_storage_fabric.FabricTests.test_unknown_model_never_calls_backend) ... ok
+test_wrong_recovery_receipt_fails (test_storage_fabric.FabricTests.test_wrong_recovery_receipt_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 8.904s
+
+OK

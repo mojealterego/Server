@@ -1,3 +1,10 @@
+# Compute v5.4b + STORAGE-06 — admission and SMB routing hardening
+
+- Compute: reject inconsistent etcd range responses; permanently revoke the current process after an observed missing or changed grant; concurrent stale observations cannot clear revocation. Transient transport failure remains fail-closed for that request and does not by itself revoke an unchanged grant.
+- Storage: lazily validate each used SMB replica via bounded redacted Rclone config read; reject other backends, ambiguous config and remote type environment overrides; do not query Rclone on verified cache hit. A rejected alias stays excluded for the staging invocation. No hardware or dialect claim.
+- Evidence: 34/34 recovered-subset tests passed (11 new; 23 previous), Python compilation and both CLI help commands passed. Six real local mTLS tests use an emulated etcd backend. Local subprocess tests use an emulated Rclone executable, not real SMB. Prior unresolved qualification gates retained; GATE-09 remains open. Base `b5b40dfdbf6f8aeac7254ed4e7e3a849e3bf2034`. [Verification](../reports/ha-storage-hardening-verification.txt).
+- Next: full integration with real etcd quorum and upstream cache/recovery adapters; physical storage and failover qualification before production acceptance. Compute v5.5 remains pending.
+
 # Compute v5.4b + STORAGE-06 — pinned authority and storage routing (increment)
 
 - Compute: implemented a non-expiring etcd v3 CAS registry, explicit operator-fenced transfer with pinned checkpoint and monotonic modification revision, TLS gateway, cluster pin and optional dispatch admission guard. 15 focused tests passed (including six real local mTLS cases with an emulated etcd RPC contract). No automatic failover or physical fencing; full dispatch wiring integration, real etcd quorum, cross-host SQLite state continuity and zero-RPO remain open. See [DISTRIBUTED_AUTHORITY.md](DISTRIBUTED_AUTHORITY.md).

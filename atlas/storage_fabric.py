@@ -2,11 +2,16 @@
 from __future__ import annotations
 import argparse
 import base64
+import configparser
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import selectors
+import subprocess
 import sys
+import time
 from dataclasses import dataclass
 
 ID=re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z')
@@ -49,6 +54,54 @@ def replicas(values,*,crypt=False):
         require(ALIAS.fullmatch(alias),'Invalid remote alias'); aliases.append(alias)
     require(len(set(aliases))==len(aliases),'Duplicate replica alias');return tuple(values)
 
+def check_smb_alias(alias, *, rclone='rclone', timeout=10):
+    """Check the configured backend without logging configuration or credentials."""
+    require(isinstance(alias,str) and ALIAS.fullmatch(alias),'Invalid SMB alias')
+    require(type(timeout) is int and 1<=timeout<=30,'Invalid config timeout')
+    require(not any(k.upper().startswith('RCLONE_CONFIG_') and k.upper().endswith('_TYPE')
+                    for k in os.environ),'Rclone remote type overrides are forbidden')
+    try:
+        with subprocess.Popen([rclone,'config','redacted',alias],stdin=subprocess.DEVNULL,
+                              stdout=subprocess.PIPE,stderr=subprocess.DEVNULL) as proc:
+            deadline=time.monotonic()+timeout;data=bytearray();limit=65536
+            try:
+                with selectors.DefaultSelector() as selector:
+                    selector.register(proc.stdout,selectors.EVENT_READ)
+                    while True:
+                        remaining=deadline-time.monotonic()
+                        require(remaining>0 and selector.select(remaining),'Rclone config deadline exceeded')
+                        chunk=os.read(proc.stdout.fileno(),min(8192,limit+1-len(data)))
+                        if not chunk:break
+                        data.extend(chunk);require(len(data)<=limit,'Rclone config exceeds limit')
+                require(proc.wait(timeout=max(.001,deadline-time.monotonic()))==0,'Rclone config unavailable')
+            finally:
+                if proc.poll() is None:proc.kill();proc.wait()
+        config=configparser.ConfigParser(interpolation=None,strict=True)
+        config.read_string(data.decode('utf-8'))
+        require(not config.defaults() and config.sections()==[alias] and
+                config.get(alias,'type',fallback='')=='smb','Expected configured SMB backend')
+    except (OSError,subprocess.SubprocessError,UnicodeError,configparser.Error):
+        raise FabricError('SMB backend verification failed') from None
+
+
+def smb_reader(aliases, *, verify=None, read=None):
+    """Lazily enroll each used replica once per staging invocation."""
+    enrolled=frozenset(aliases);accepted=set();rejected=set()
+    def fetch(remote,offset,length):
+        alias=remote.partition(':')[0]
+        require(alias in enrolled and alias not in rejected,'Unenrolled or rejected SMB replica')
+        if alias not in accepted:
+            try:(verify or check_smb_alias)(alias)
+            except FabricError:
+                rejected.add(alias);raise
+            accepted.add(alias)
+        backend=read
+        if backend is None:
+            from .storage_cache import read_range as backend
+        return backend(remote,offset,length)
+    return fetch
+
+
 @dataclass(frozen=True)
 class ModelRoute:
     sha256:str
@@ -69,9 +122,11 @@ class Fabric:
         self._routes=routes;self._recovery_pin=recovery['sha256'];self._recovery_remotes=replicas(recovery['remotes'],crypt=True);self.pin=pin
     def stage_model(self,name,envelope,cache,*,stage=None):
         require(isinstance(name,str) and name in self._routes,'Unknown model ID');route=self._routes[name]
+        args=(envelope,route.public_key,route.sha256,cache,list(route.remotes))
         if stage is None:
             from .storage_cache import stage
-        result=stage(envelope,route.public_key,route.sha256,cache,list(route.remotes))
+            result=stage(*args,reader=smb_reader(route.remotes))
+        else:result=stage(*args)
         require(isinstance(result,dict) and result.get('sha256')==route.sha256,'Model stage receipt mismatch')
         return result
     def restore(self,receipt,vault,dest,*,restore=None):
