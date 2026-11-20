@@ -1,3 +1,7 @@
+# OMEGA-X v5.4a + STORAGE-05 development
+
+Same-host authority lock and quiesced coordinator checkpoints with verified lease/replay and completed CAS recovery; pinned three-share SMB recovery sets with verified replica failover and atomic offline publication. See [HA recovery](docs/HA_CONTROL_PLANE.md) and [storage recovery](docs/STORAGE_FAILOVER.md). 21 focused cases passed. Cross-host HA, automatic SMB failover and full-repository/physical qualification remain open.
+
 # OMEGA-X v5.3 + STORAGE-04 development
 
 Bounded parallel CAS replication with compatible manifests, model-only SMB3 identity, Samba VFS audit configuration and persisted dedicated-filesystem capacity checks. See [parallel CAS](docs/BULK_CAS.md) and [SMB access and capacity](docs/SMB_ACCESS_CAPACITY.md). 11 new and 40 selected regression cases passed in split local runs. Physical throughput, live SMB and volume qualification remain open.

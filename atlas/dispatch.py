@@ -23,6 +23,7 @@ from .artifacts import ArtifactStore, _open_regular, _private_dir, _check_digest
 from .mesh import MeshServer, _peer_pin, _remaining, recv_frame, send_frame, server_context, client_context, HEX
 from .multimodal import validate_recipes, probe_output, ID, MAX_OUTPUT
 from .phaselease import LeaseStore
+from .ha_authority import authority
 from tools.capctl import admit, canonical, read_json, integer
 
 CHUNK = 64 * 1024
@@ -308,13 +309,17 @@ def main(argv=None):
         q.add_argument('--port',type=int,default=8444);q.add_argument('--timeout',type=int,default=30)
     for name in ('db','plan','tasks','nodes','catalog','cas','staging','policy','replay','pins','media-tools'):s.add_argument('--'+name,type=Path,required=True)
     s.add_argument('--bind',default='127.0.0.1');s.add_argument('--allow-network',action='store_true');s.add_argument('--lease-ttl',type=int,default=60);s.add_argument('--max-attempts',type=int,default=3)
+    s.add_argument('--standby-wait',type=int,default=0,help='Wait for same-host authority lock, up to 3600 seconds')
     c.add_argument('--host',required=True);c.add_argument('--server-pin',required=True);c.add_argument('--body',type=Path,required=True);c.add_argument('--upload-file',type=Path);c.add_argument('--download-dir',type=Path)
     a=p.parse_args(argv)
     try:
         if a.cmd=='serve':
-            q=Coordinator(a.db,read_json(a.plan),read_json(a.tasks),read_json(a.nodes),read_json(a.catalog),ArtifactStore(a.cas),a.staging,read_json(a.policy),a.replay,read_json(a.media_tools),ttl=a.lease_ttl,max_attempts=a.max_attempts)
-            with DispatchServer((a.bind,a.port),server_context(a.ca,a.cert,a.key),q,read_json(a.pins),timeout=a.timeout,allow_network=a.allow_network) as srv:
-                print('Dispatch listening on '+str(srv.server_address),file=sys.stderr,flush=True);srv.serve_forever()
+            with authority(a.db,wait=a.standby_wait):
+                q=Coordinator(a.db,read_json(a.plan),read_json(a.tasks),read_json(a.nodes),read_json(a.catalog),ArtifactStore(a.cas),a.staging,read_json(a.policy),a.replay,read_json(a.media_tools),ttl=a.lease_ttl,max_attempts=a.max_attempts)
+                with DispatchServer((a.bind,a.port),server_context(a.ca,a.cert,a.key),q,read_json(a.pins),timeout=a.timeout,allow_network=a.allow_network) as srv:
+                    # Keep authority until all in-flight handlers have drained.
+                    srv.daemon_threads=False;srv.block_on_close=True
+                    print('Dispatch listening on '+str(srv.server_address),file=sys.stderr,flush=True);srv.serve_forever()
         else:
             body=read_json(a.body);ctx=client_context(a.ca,a.cert,a.key)
             require(not (a.upload_file and a.download_dir),'Choose one transfer operation')

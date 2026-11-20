@@ -1,3 +1,9 @@
+# Compute v5.4a + STORAGE-05 — standby authority and pinned SMB recovery
+
+- Compute: same-host private authority lock with bounded standby wait in dispatch CLI, capture exclusion, quiesced SQLite WAL-aware checkpoint of lease and replay databases plus completed CAS outputs, explicit fencing/latest-state confirmation, atomic offline restore preserving retry and replay state. 12 focused cases passed. Full dispatch integration regression, cross-host quorum/physical fencing and zero-RPO HA remain open.
+- Storage: coherent operator-quiesced recovery receipt for all three SMB shares, pinned snapshot identities, encrypted remote export using existing CAS, no silent fallback to an older generation, all-or-nothing local offline publication. 9 focused cases passed, including real upstream snapshot/CAS and subprocess emulated replicas. Automatic live share promotion, ACL metadata, transparent SMB failover and physical tests remain open.
+- Verification: 21 focused tests passed on Linux (4.105 s), Python compilation for recovered sources, CLI help for both new modules. Full source checkout blocked by DNS; no full-repo regression or real multi-host deployment claimed. Next compute v5.4b distributed authority, then v5.5 self-optimization; next STORAGE-06 unified storage fabric, retaining outstanding STORAGE-05 qualification gates.
+
 # Compute v5.3 + STORAGE-04 — parallel CAS and SMB access/capacity
 
 - Compute: bounded 1..8 parallel block operations, verified Merkle resume, in-object duplicate suppression, manifest-last publication, compatible remote layout and replicactl --workers. 5 new and 12 existing replication tests passed. Actual throughput/RSS, global bandwidth arbitration and high-speed mTLS dispatch remain open.
