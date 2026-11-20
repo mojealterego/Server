@@ -1,3 +1,11 @@
+# Evolution batch E01-E11 (2026-11-20)
+
+Compute v5.5b + STORAGE-07a: 11 engineering scopes implemented and locally accepted, not 11 full production releases. 47/47 selected tests (34 new, 13 upstream), 200 seeded schedule cases, CLI archive round trip 1,250,000 bytes. See [E01-E22](EVOLUTION_11.md), [zero-cost capacity](ZERO_COST_FABRIC.md), [workload optimizer](WORKLOAD_OPT.md), and [verification](../reports/evolution-11-verification.txt).
+
+Next E12-E22: authorized free-provider registry, quota ledger, encrypted cross-provider chunks, erasure coding, SMB namespace, edge federation, virtual artifacts, locality optimization, real distributed quorum, ransomware recovery, physical/market qualification. All OPEN; prior gates remain unchanged. Base 9b732af3763416c3a02798b2e88d08f94559f8ba.
+
+---
+
 # Compute v5.5a + STORAGE-06 — adaptive polling and verified replica preference
 
 - Compute: opt-in bounded adaptive idle polling (`--max-poll-interval`, base..30 s), reset on state progress and execution, preserve certified assignment order, privacy, retry budgets and existing RPC-error backoff. Fixed default retained. Deterministic one-task idle fixture: 21 status calls reduced to 6 in the same 20 simulated seconds; no energy/throughput or physical hardware claim. 5 new cases and 12 existing scheduler cases passed. Worker CLI compiles; its full remote execution path was not run.

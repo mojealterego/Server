@@ -1,0 +1,68 @@
+Base source SHA: 9b732af3763416c3a02798b2e88d08f94559f8ba
+Environment: Linux 6.18.57 x86_64, Python 3.13.5.
+Exact recovered upstream Git blobs:
+f5f67211d3fd74bc495ebd552ba72b555a6005bc atlas/artifacts.py
+249b5ad3b6a877d29f06233c1cbebec142a099ae atlas/planner.py
+5fba6e785ab1a605ea18492113deb746279af264 atlas/phaseshift.py
+6869ea3d887b6245a144b33388e068682f14b719 atlas/phaseverify.py
+53931dc495422919b3e0d66fc0bf8cc7e55591c6 tests/test_atlas_planner.py
+58474a95ad2643b1dea50f5a1b03f0edcc230356 tests/test_phase_properties.py
+
+RED: missing capacity_fabric, pooled_archive and workload_opt modules caused unittest import errors; added remote probe tests initially failed AttributeError before implementation.
+GREEN: python -m unittest discover -s tests -v
+34 new tests and 13 exact upstream regressions:
+test_catalog_rejects_unsafe_name ... ok
+test_dependencies_block_downstream ... ok
+test_dependency_cycle_rejected ... ok
+test_local_private_llm ... ok
+test_no_gpu_no_video ... ok
+test_no_model_staging_assumptions ... ok
+test_private_never_offloaded ... ok
+test_thermal_hard_stop ... ok
+test_unknown_model_fails_closed ... ok
+test_unknown_privacy_rejected ... ok
+test_unverified_projector_blocks_vision ... ok
+test_01_duplicate_account_pool_rejected ... ok
+test_02_conservative_capacity_and_budgets ... ok
+test_03_no_paid_or_unauthorized_pool ... ok
+test_04_stale_or_future_telemetry_excluded ... ok
+test_05_same_domain_cannot_claim_two_copies ... ok
+test_06_planner_stripes_and_never_exceeds_budget ... ok
+test_07_independent_verifier_rejects_tampering ... ok
+test_08_logical_operation_budget_enforced ... ok
+test_09_stale_plan_not_reused ... ok
+test_10_local_probe_reports_real_mount ... ok
+test_11_strict_types_and_oversize ... ok
+test_capacity_bound_balanced_domains ... ok
+test_order_independent_placement ... ok
+test_deadline_and_alias ... ok
+test_live_process_quota ... ok
+test_unknown_quota_refused ... ok
+test_rehashed_wrong_failure_node_rejected ... ok
+test_two_hundred_seeded_schedules_all_certificates_check ... ok
+test_corrupt_only_replica_never_publishes ... ok
+test_corrupt_replica_fails_over ... ok
+test_duplicate_volume_or_wrong_identity_rejected ... ok
+test_manifest_no_overwrite ... ok
+test_real_free_space_guard ... ok
+test_real_roundtrip_and_deduplicated_blocks ... ok
+test_real_two_mounts_and_restore_when_one_missing ... ok
+test_reject_symlink_and_remote_placement ... ok
+test_wrong_pin_or_existing_destination ... ok
+test_better_candidate_is_certified_against_original_inputs ... ok
+test_determinism_and_budget_and_coverage ... ok
+test_duplicate_and_too_few_samples_rejected ... ok
+test_incomplete_candidate_profile_does_not_replace_baseline ... ok
+test_model_and_input_binding ... ok
+test_nearest_rank_tail_penalty ... ok
+test_private_task_never_migrates ... ok
+test_stale_baseline_profile_fails_closed ... ok
+test_threshold_and_no_improvement_keep_baseline ... ok
+
+Ran 47 tests in 5.560s
+OK
+
+Additional CLI execution: capacity -> plan -> verify -> ingest -> restore PASS; restored 1250000 bytes.
+CLI workload optimization PASS; synthetic objective 100 -> 30; N-1 preserved.
+python -m compileall -q atlas tests: exit 0.
+Two real filesystem mounts (overlay and /dev/shm tmpfs), not separate hardware. Rclone executable fixture subprocess, not real provider. Synthetic compute profiles, not hardware performance. Full clone blocked DNS. No actual external etcd, Samba, provider, cloud provisioning or new charges. No GitHub Actions or YepCode. All prior unqualified gates remain.
