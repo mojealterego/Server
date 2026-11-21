@@ -1,3 +1,14 @@
+# Storage E14 / Omega Hyper CAS (2026-11-21)
+
+- Base: `7454e43bd085257824767d48c5c3dee6bb8f4b26` (main only). E12 provider registry and E13 single-host quota ledger remain intact.
+- Added AES-256-GCM chunk storage with authenticated HMAC/SHA-256 pinned manifests, private local CAS, opt-in Rclone adapter and quota reservations, bounded remote readback and replicated restore with failover.
+- Hardened manifest type validation and no-follow/nonblocking private regular-file input. Actual RED failures for malformed fields and symlink manifest preceded the fix.
+- Local acceptance: 53/53 selected tests (including 7 current E12 main regressions, E13 upstream suite, and E14 crypto, CLI, Rclone subprocess fixture and tamper tests); Python compileall PASS. Exact source blobs recorded in [E14 evidence](E14_VERIFICATION.md) and [E14 runbook](E14_STORAGE.md).
+- Gate status: E14 IMPLEMENTED / TESTED_LOCAL / INTEGRATED_CODE. GATE-05 external cloud and multi-host E2E BLOCKED; GATE-06 PARTIAL (local attacks only), GATE-07 physical recovery BLOCKED; GATE-09 BLOCKED. No real vendor credentials, zero-charge guarantees, independent devices or production deployment.
+- Next: E15 Reed-Solomon erasure code with bounded recovery tests, then E16 global namespace SMBv2/SMBv3; separately qualify E12-E14 against real authorized provider accounts and external gates.
+
+---
+
 # E13 / STORAGE-07c — durable local quota reservations (local increment)
 
 - Added `atlas/quota_ledger.py` and `tests/test_quota_ledger.py`: ten focused E13 cases passed, including concurrent reservations; 17/17 selected E12+E13 tests passed on a local runner.
