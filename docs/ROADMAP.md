@@ -1,3 +1,11 @@
+# E20a — signed namespace checkpoint chain (2026-11-21)
+
+- **IMPLEMENTED, LOCALLY TESTED:** Ed25519-signed, SHA-256-chained immutable checkpoint receipts of E16 single-host SQLite namespace; externally supplied hash pin; independent signature and monotonic generation verifier; optional exact-current-state gate. Private files, no-overwrite and fsync, serialized writers.
+- **Evidence:** 17/17 new focused tests, actual sqlite3 transaction, concurrent append, subprocess CLI; red-green fixes for over-reading whole SQLite file, resource leaks, acceptance of empty chain. [E20a contract](E20_AUTHORITY_CHECKPOINT.md) · [proof](../reports/e20a-verification.txt).
+- **BLOCKED:** no real etcd quorum or cross-host fencing, no automatic transactional checkpoint on every mutation, no independent external pin retention device, no real Samba/cloud end-to-end. GATE-09 stays OPEN. Base `82410a84ea6ccbf6b3c18f6a82c49126b8d77e70`.
+
+---
+
 # E19b — Verified locality egress gate (2026-11-21)
 
 - **IMPLEMENTED + LOCALLY TESTED:** independently recompute p95 and network transfer from a pinned E19 source profile, reject stale/tampered rankings, forbid explicitly billable links, validate JSON/directory inputs and bounded CLI. Existing PHASESHIFT certification and E13 quota ledger remain mandatory for any execution.

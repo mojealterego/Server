@@ -1,0 +1,15 @@
+OMEGA-X E20a — independently pinned local checkpoint verification
+Scope: locally-tested E20a, not E20 distributed authority or PRODUCTION VERIFIED.
+Base: repository main 82410a84ea6ccbf6b3c18f6a82c49126b8d77e70.
+Environment: Linux x86_64; Python 3.13.5; cryptography 46.0.4.
+RED-1: test module import failed before implementation; RED-2: database read attempted 4GiB read; RED-3: leaking SQLite connections; RED-4: empty chain accepted as proof.
+GREEN command: PYTHONWARNINGS=error::ResourceWarning python -m unittest discover -s tests -v
+Result: 17 tests passed; no failures/errors/skips.
+Compile: python -m compileall -q atlas tests — exit 0.
+Tested: actual private SQLite database (authority/entries/operations), signature Ed25519, tamper, replay, rollback, monotonic epoch, owner-only files, concurrency and subprocess CLI.
+Not performed: physical distributed quorum/etcd, cross-host E2E, complete repository checkout (DNS blocked), real SMB/S3, independently secured external tip device.
+IMPORTANT: The tested SQLite fixture reproduces E16 global_namespace schema but does not execute its production module.
+Source SHA-256:
+90069e3bfd4fdfb48585f87a44095078ef3d045691d73adac0cf004ed09e3824  atlas/authority_checkpoint.py
+8c3068837c5f2123e5db3b7d77e4f905fc604c869298c30c4e5dc00f4831f381  docs/E20_AUTHORITY_CHECKPOINT.md
+457fe0bdefc11d05221438ca41c6cb5045478d478eb33bbcad15991efb45d9eb  tests/test_authority_checkpoint.py
