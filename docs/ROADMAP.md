@@ -1,3 +1,11 @@
+# E19b — Verified locality egress gate (2026-11-21)
+
+- **IMPLEMENTED + LOCALLY TESTED:** independently recompute p95 and network transfer from a pinned E19 source profile, reject stale/tampered rankings, forbid explicitly billable links, validate JSON/directory inputs and bounded CLI. Existing PHASESHIFT certification and E13 quota ledger remain mandatory for any execution.
+- **Evidence:** 15/15 focused local tests, including separate CLI process, source tampering and path safety. See [E19b contract](E19B_EGRESS_GATE.md) and [verification](../reports/e19b-verification.txt).
+- **NOT a billing guarantee or transport ACL:** zero-cost links are operator assertions; no real provider, actual paid-transfer reconciliation, telemetry signing, multi-task capacity reservation, or activation. GATE-09 remains BLOCKED. Base `afb6c5d5c395f09aee70e3b3d4f0ad2a4abc9578`.
+
+---
+
 # Evolution E19a — verified-data locality advisor (offline, read-only)
 
 Added E19a: bounded pinned profile of data digest availability, directional measured bandwidth/RTT and stage-level p95; deterministic policy-constrained ranking. Missing/expired routes and measurements fail closed. Output is ADVISORY_ONLY and cannot authorize migration, create workloads or bypass existing PHASESHIFT certified schedules. 11 new local cases (10 unit + 1 subprocess CLI), combined E16–E19 scope 44/44 PASS in repeated runs, Python compileall PASS. No live WAN or provider measurements. See [E19 locality](E19_LOCALITY.md) and [verification](../reports/e19-verification.txt). Base 73e200d783d30c4dc7d331e7aeb2a5679028d225.

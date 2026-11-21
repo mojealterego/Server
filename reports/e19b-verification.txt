@@ -1,0 +1,31 @@
+OMEGA-X SERVER: E19b zero-billable-egress advisory gate
+Upstream base commit at design time: afb6c5d5c395f09aee70e3b3d4f0ad2a4abc9578
+Language/runtime: Python 3.13.5, Linux x86_64, standard library only.
+
+RED: additional regression tests initially demonstrated four failures:
+  forged runtime p95 accepted, forged nonexistent node accepted,
+  forged transfer estimate accepted, expired runtime still accepted.
+GREEN: source repaired to recompute runtime p95 and E19a transfer from
+  independently pinned raw observations before applying egress filtering.
+
+Fresh final verification:
+  cd /mnt/data/server-e19b && python -m unittest discover -s tests -v
+  Ran 15 tests in 2.109s — OK (0 failures, 0 errors)
+  python -m compileall -q atlas tests — exit 0
+  python -m atlas.egress_gate --help — exit 0
+  Actual CLI test executes a real Python subprocess with 0600 files,
+  outputs a filtered recommendation, rejects symlinked policy, duplicate
+  JSON keys, nonfinite values (tested via parser), and invalid pin.
+  Tests are self-contained E19b-focused only; full repository not available
+  in local runner due GitHub DNS. No actual cloud billing, SMB, S24 Ultra,
+  hardware, ISP, LAN or end-to-end external services were tested.
+
+Declared free_bytes and billable=false: operator-supplied only; not
+provider financial attestation. SHA pins are integrity only, not signatures.
+Per-task advice can overbook collectively; no quota ledger call or actual
+payment authorization is performed. Production GATE-09 remains BLOCKED.
+
+Source SHA-256:
+6694de9ef82dd3d3eaf51fc0d52b2ce8c6d2d2709951167e54b89306e060ef3f  atlas/egress_gate.py
+20b8e4a516f15f7dbf91092765cb609408ad205ab772e93b9a5e174b67ef88f5  tests/test_egress_gate.py
+bbfcda1347048ae0f0e249eef76dd2ea588279f5a046d97dfa67b2d29383fbfd  docs/E19B_EGRESS_GATE.md
