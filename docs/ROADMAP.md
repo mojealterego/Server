@@ -1,3 +1,11 @@
+# Mobile evidence-gated preflight (2026-11-21)
+
+- Source: `termux/device_model_probe.py` provides read-only first-page mmap evidence, optional full SHA-256, observed file count, model-header classification through the existing parser and current-process CPU affinity. It refuses symlinks, malformed input and detected concurrent mutation. Does not copy model weights or overwrite Rclone configurations.
+- Verification: 13/13 isolated deterministic fixture tests PASS on x86_64 Linux, `compileall` PASS, CLI `--help` PASS; exact Git blobs match tested code. No full-repo regression, real S24 Ultra hardware check, inference, mmproj lineage, thermal/performance result or real cloud transfer. `reports/green-mobile.txt` remains NOT_RUN. See [report audit](MOBILE_REPORT_AUDIT.md).
+- Previous E12–E14 implementation is still a standalone ZIP patch pending integration; this increment does not certify it. Existing production/HA/SMB GATE-09 remains OPEN. Parent: `aec4640b476fc097738639d2d5dba5fb019f2799`.
+
+---
+
 # Evolution batch E01-E11 (2026-11-20)
 
 Compute v5.5b + STORAGE-07a: 11 engineering scopes implemented and locally accepted, not 11 full production releases. 47/47 selected tests (34 new, 13 upstream), 200 seeded schedule cases, CLI archive round trip 1,250,000 bytes. See [E01-E22](EVOLUTION_11.md), [zero-cost capacity](ZERO_COST_FABRIC.md), [workload optimizer](WORKLOAD_OPT.md), and [verification](../reports/evolution-11-verification.txt).
