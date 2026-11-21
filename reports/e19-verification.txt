@@ -1,0 +1,23 @@
+E19a Offline data locality advisor — verification
+Base main commit: 73e200d783d30c4dc7d331e7aeb2a5679028d225
+Python: 3.13.5, Linux x86_64; cryptography: 46.0.4 (used in E17 regression).
+RED: test_locality_e19 failed ModuleNotFoundError (new module missing).
+RED CLI: subprocess produced no JSON before E19 command was implemented.
+GREEN: python3 -m unittest discover -s tests -q
+Ran 44 tests in 5.135s — OK
+Ran 44 tests in 5.182s — OK
+Ran 44 tests in 4.788s — OK
+python3 -m compileall -q atlas tests — exit 0
+Test categories: new E19a 10 deterministic tests + 1 actual subprocess CLI;
+33 E16–E18 regressions on newly added modules.
+Data/model locality and hardware profiles are synthetic/declared input, not
+measured from real nodes; no network, SMB, CDN, etcd quorum or cloud account.
+Full main repository suite not run (local clone GitHub DNS failure).
+Advisory-only: does not assign leases, prefetch private data or launch jobs.
+Production GATE-09: OPEN.
+
+SHA256:
+7f5023f691795fc4b9333805295074d65312984b1affbf58e646619b992dc73b  atlas/locality_advisor.py
+0c9b22bb3d14c058e70a5668fe29ef6efad0a3faa5bc060da0cc0db38df32099  tests/test_locality_e19.py
+f0eb71ee0050b9da18382fd63a69f1cf1beba0a1b5f89f3cd18655398c382116  tests/test_locality_cli_e19.py
+8f9002437437b4af60bb65526d57003fa928debe753f6d340c0240b409172891  docs/E19_LOCALITY.md

@@ -1,3 +1,11 @@
+# Evolution E19a — verified-data locality advisor (offline, read-only)
+
+Added E19a: bounded pinned profile of data digest availability, directional measured bandwidth/RTT and stage-level p95; deterministic policy-constrained ranking. Missing/expired routes and measurements fail closed. Output is ADVISORY_ONLY and cannot authorize migration, create workloads or bypass existing PHASESHIFT certified schedules. 11 new local cases (10 unit + 1 subprocess CLI), combined E16–E19 scope 44/44 PASS in repeated runs, Python compileall PASS. No live WAN or provider measurements. See [E19 locality](E19_LOCALITY.md) and [verification](../reports/e19-verification.txt). Base 73e200d783d30c4dc7d331e7aeb2a5679028d225.
+
+E19b real signed measurements and certified candidate integration OPEN. E20 etcd/quorum, E21 ransomware recovery and E22 physical SMB market qualification OPEN. GATE-09 remains BLOCKED.
+
+---
+
 # Evolution E16a-E18a — transactional metadata, signed edge admission, pinned model hydration
 
 Local integration milestone on main. E16a: single-host SQLite transactional namespace for pinned E14/E15 archives; atomic rename/CAS/replay/tombstones, six-writer concurrency; no Samba VFS or distributed byte locks. E17a: Ed25519 operator grant and node proof, one-use challenge, persistent revocation; no actual device attestation or mesh data transfer. E18a: bounded HTTPS-only, pinned public model reference hydrator, full SHA-256 and immutable-style atomic private cache publication; no live Hugging Face download tested.
