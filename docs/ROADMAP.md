@@ -1,3 +1,11 @@
+# E12 / STORAGE-07b — read-only provider enrollment (local increment)
+
+- Added `atlas/provider_registry.py` and `tests/test_provider_enrollment_gate.py`: 7/7 local test cases passed (real local Rclone subprocess fixture; no live cloud).
+- Pin operator registry digest; check unique account/quota identity, expected backend, Cloudflare R2 HTTPS endpoint, bounded quota probe, no environment overrides, reject unsupported TeraBox writes. Outputs are advisory read-only.
+- External E12 OAuth, live account, rates, cost guarantee and integration with E13/E14 remain OPEN. E13/E14 code remains in local patch and is not marked merged. See [E12 gate](E12_PROVIDER_GATE.md).
+- No mobile, Docker, etcd or SMB qualification from these tests. GATE-09 remains OPEN. Base: `aacf69533553cd8a3e2a21556325372275fd0ec6`.
+
+---
 # Mobile evidence-gated preflight (2026-11-21)
 
 - Source: `termux/device_model_probe.py` provides read-only first-page mmap evidence, optional full SHA-256, observed file count, model-header classification through the existing parser and current-process CPU affinity. It refuses symlinks, malformed input and detected concurrent mutation. Does not copy model weights or overwrite Rclone configurations.

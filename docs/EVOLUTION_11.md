@@ -24,7 +24,7 @@ These are eleven tested scopes, not eleven fully qualified releases. See reports
 
 | ID | Milestone | Required acceptance evidence |
 |---|---|---|
-| E12 | Free-provider capability registry, official TeraBox OAuth and approved Rclone/S3 adapters | Real authorized quota and encrypted round trip for each eligible provider; zero unexpected charges; token rotation and terms review; no session-cookie scraping. |
+| E12 | Read-only provider registry **locally implemented**; external OAuth and live adapter qualification **OPEN** | Seven local tests; real authorized quota and encrypted round trip, billing checks, token rotation and provider terms still required; no session-cookie scraping. |
 | E13 | Distributed quota/operation reservations with atomic CAS and fencing | Parallel admission cannot overbook; idempotency, expiry, crash/recovery and provider reconciliation; alerts are not spend caps. |
 | E14 | Encrypted cross-provider chunk fabric | Private encrypted chunks, pinned authenticated manifests, streaming multipart writes, failure rollback, verified independent-provider recovery. |
 | E15 | Adaptive erasure coding 4+2/8+3 | Real Reed-Solomon encode/decode/repair, randomized loss up to parity limit; compare bytes/CPU/latency with two copies. |
