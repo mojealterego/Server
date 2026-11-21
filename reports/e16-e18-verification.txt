@@ -1,0 +1,42 @@
+OMEGA SERVER — E16a/E17a/E18a local verification
+Base branch: main
+Base commit: 3bc0a4ce86d6b994b97c430a44e651d5bfc83c15
+Environment: Linux x86_64, Python 3.13.5, cryptography 46.0.4.
+Branch policy: main only. No extra branches, force push, GitHub Actions or YepCode.
+
+RED: initial tests import failed for atlas.global_namespace, atlas.edge_enrollment,
+atlas.virtual_model; subprocess CLI tests failed before the CLI was implemented.
+GREEN: cd /mnt/data/omega_evolution && python3 -m unittest discover -s tests -v
+Results: 33/33 PASS, runtime ~3.5 seconds; command repeated three times, all PASS.
+Independent subprocess acceptance: namespace put/get/stale write rejection;
+virtual model offline verification and wrong pin rejection.
+python3 -m compileall -q atlas tests: exit=0.
+
+Evidence scopes:
+E16a: 12 single-host SQLite metadata tests, one subprocess CLI E16 test;
+strict path validation, tenant-bound handles, operation ID replay semantics,
+atomic CAS/revision/tombstones, epoch fencing, 6-writer concurrency.
+E17a: 11 actual Ed25519 operator/node signature tests with challenge-bound proof,
+replay/expiry/revocation/epoch checks; no physical edge devices attested.
+E18a: 8 pinned model hydration tests, one subprocess CLI E18 test;
+exact SHA-256, private atomic staging, bounded streaming, no network on cache hit.
+No actual Hugging Face CDN request made.
+
+Not run: full-repository tests (local checkout blocked by GitHub DNS), Samba
+SMB2/SMB3 live interoperability, real mobile Android S24, distributed quorum,
+physical independent disks, global POSIX semantics, TLS remote transport,
+cloud provider account transfer, storage billing qualification, market benchmarks.
+E16/E17/E18 production GATE-09: BLOCKED / NOT_RUN.
+No test reported as a cloud or real-device E2E.
+
+Added file SHA-256:
+7be5d911a0d1871e36dc6b2424f6d0ddd9c1cb2561f006c49e309ad161ed2079  atlas/edge_enrollment.py
+ff570b2cfcbc8673ce2b5c96aced97352ee91ed5113bfe7e3c1e7aaa3c306a5f  atlas/global_namespace.py
+8bf1379729c3efce965c065df77af715622e3d05e344fba75777295fc2dac96a  atlas/virtual_model.py
+48e6dec8a269e2d889848f0b0b7d46ed5398e7fbafba5d9175fae53168c25fd7  docs/E16_NAMESPACE.md
+30828dab6a45973fbad83af09538ba23a9c6075ed2b10914ae3a9ef4b72f5964  docs/E17_EDGE_ENROLLMENT.md
+1cac25ec16755bc7051ce0de09fb5505486c816bf61b7adf90e48e500cb4c6a3  docs/E18_VIRTUAL_MODELS.md
+a578fcf16c7513b1f3a74d23ed6c311129ec50128b9ee113dbf3ca12061fd348  tests/test_edge_e17.py
+f1c3306d541ee5bb96e303a3e4b38addc4735caa15c1f74c8219a89b5fcf8230  tests/test_namespace_e16.py
+a9b3205992b6233cf8fbe31dd7ce78b030c87de8f9656c0a9fb94e04bf3f2570  tests/test_operational_cli.py
+611372b72e352a4cf8e95be96b1f4ea320bd9949066211a56160108112bf4376  tests/test_virtual_model_e18.py

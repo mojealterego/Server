@@ -1,3 +1,13 @@
+# Evolution E16a-E18a — transactional metadata, signed edge admission, pinned model hydration
+
+Local integration milestone on main. E16a: single-host SQLite transactional namespace for pinned E14/E15 archives; atomic rename/CAS/replay/tombstones, six-writer concurrency; no Samba VFS or distributed byte locks. E17a: Ed25519 operator grant and node proof, one-use challenge, persistent revocation; no actual device attestation or mesh data transfer. E18a: bounded HTTPS-only, pinned public model reference hydrator, full SHA-256 and immutable-style atomic private cache publication; no live Hugging Face download tested.
+
+Evidence: 33/33 new local tests PASS on three repeated runs (12 E16 + 11 E17 + 8 E18 + 2 subprocess CLI); Python compileall PASS. See [E16](E16_NAMESPACE.md), [E17](E17_EDGE_ENROLLMENT.md), [E18](E18_VIRTUAL_MODELS.md), [verification](../reports/e16-e18-verification.txt). Base `3bc0a4ce86d6b994b97c430a44e651d5bfc83c15`.
+
+Production E16, E17 and E18 remain OPEN/BLOCKED pending real SMB2/3 E2E, distributed authority, independent devices, authenticated network paths and source-provider evidence. Existing E12–E15 implementation and all GATE-09 requirements remain unchanged. Next E19: verified compute/storage locality; E20: real etcd authority; E21: immutable ransomware recovery; E22: physical market benchmark.
+
+---
+
 # Storage E15: encrypted Reed-Solomon erasure archive (2026-11-21)
 
 - Base main: `3ce3c4cb2778b4c347f0e8aa8ce096612dd6e8ea`. E14 encrypted CAS, E13 local quota fencing and E12 provider enrollment are retained.
