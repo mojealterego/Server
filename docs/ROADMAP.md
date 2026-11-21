@@ -1,3 +1,15 @@
+# Storage E15: encrypted Reed-Solomon erasure archive (2026-11-21)
+
+- Base main: `3ce3c4cb2778b4c347f0e8aa8ce096612dd6e8ea`. E14 encrypted CAS, E13 local quota fencing and E12 provider enrollment are retained.
+- Implemented offline systematic GF(256) Cauchy Reed-Solomon 4+2 and 8+3, exact k-of-(k+m) recovery, deterministic profile selection by declared failure-domain count, SHA-256 validation of every fragment, AES-256-GCM decryption and HMAC-pinned E15 manifests.
+- Implemented streaming local archive ingest/restore/repair on E14 private CAS using E13 budget reservations and fail-closed no-overwrite publication. Supports recovery from 2 lost fragments in 4+2 or 3 in 8+3 (not corruption without authenticated per-fragment hashes).
+- Evidence: 70/70 selected local unit/regression/CLI/process/fault tests passed; Python compileall PASS. Includes all 53 E12-E14 recovered-subset tests and 17 E15 tests. [E15 runbook](E15_ERASURE.md), [actual test and benchmark output](E15_VERIFICATION.md).
+- Actual local 1 MiB seeded codec benchmark: raw stored 1.5x for 4+2, 1.375x for 8+3, compared to 2.0x mirrored data; 25% and 31.25% fewer shard bytes than two full copies before crypto/metadata/request overhead. CPU timings are not Android, storage or WAN benchmarks.
+- Status: E15 IMPLEMENTED / TESTED_LOCAL / CODE_INTEGRATED, GATE-05 external integration BLOCKED, GATE-06 PARTIAL, GATE-07 real physical recovery BLOCKED, GATE-09 BLOCKED. No cloud deployment, actual separate fault domains, TB loads, SMB namespace or assured free provider API.
+- Next: E16 transactional virtual namespace and SMB2/SMB3 adapter; separate E12-E15 real-provider cost, data-plane and physical-fault qualification. Do not alter these gates without evidence.
+
+---
+
 # Storage E14 / Omega Hyper CAS (2026-11-21)
 
 - Base: `7454e43bd085257824767d48c5c3dee6bb8f4b26` (main only). E12 provider registry and E13 single-host quota ledger remain intact.
