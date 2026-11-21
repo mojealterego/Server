@@ -1,3 +1,10 @@
+# E13 / STORAGE-07c — durable local quota reservations (local increment)
+
+- Added `atlas/quota_ledger.py` and `tests/test_quota_ledger.py`: ten focused E13 cases passed, including concurrent reservations; 17/17 selected E12+E13 tests passed on a local runner.
+- Enforces private local SQLite WAL, atomic multi-counter budget checks, TTL, idempotency, monotonic time, epoch fencing and UNCERTAIN quarantine after ambiguous side effects. Explicit reconciliation is mandatory.
+- E13 distributed authority, real provider billing reconciliation and cross-host fencing remain OPEN. E14 is still a separate patch, not merged. No real etcd/SMB/cloud claim; GATE-09 OPEN. See [E13 gate](E13_QUOTA_GATE.md).
+
+---
 # E12 / STORAGE-07b — read-only provider enrollment (local increment)
 
 - Added `atlas/provider_registry.py` and `tests/test_provider_enrollment_gate.py`: 7/7 local test cases passed (real local Rclone subprocess fixture; no live cloud).
