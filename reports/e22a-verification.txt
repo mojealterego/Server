@@ -1,0 +1,44 @@
+E22a SMB benchmark, local deterministic verification
+BASE_SHA=4afb890926f74ee8cb596b60db794835aad6256d
+TEST_COMMAND=PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p test_smb_qualification.py -v
+RUNNER=Linux x86_64
+PYTHON=Python 3.13.5
+PYTHON_COMPILE=PASS
+CLI_HELP=PASS
+UPSTREAM_REPO_REGRESSION=NOT_RUN (no full checkout in runner)
+REAL_SAMBA_OR_SMB2_SMB3_NETWORK=NOT_RUN
+REAL_S24_OR_VPS=NOT_RUN
+SMBCLIENT_FIXTURE=CONTROLLED_LOCAL_BASH_SUBPROCESS_NOT_REAL_SMB
+GATE_01=PASS_E22a_SCOPE
+GATE_02=PASS_E22a_SCOPE
+GATE_03=PASS_E22a_SCOPE
+GATE_04=PASS_E22a_LOCAL
+GATE_05=BLOCKED_REAL_SMB_NETWORK
+GATE_06=PARTIAL_LOCAL_NEGATIVE_TESTS
+GATE_07=BLOCKED_REAL_FAILOVER
+GATE_08=PASS_E22a_DOCS
+GATE_09=BLOCKED_FULL_E22
+CODE_SHA256=f8927d9223f9a7e9a50b44fc76b2bb2c036eee63dbaaadf10ee7862aad24a01f
+TEST_SHA256=9309e177eedbf919b8eb9c4109a85605a90cdcd40987a59256b9993ad095f1dc
+DOC_SHA256=09e44e762578246dcb58025c25a21f820dd5011c50e9d5177b4d119a8acd53a2
+
+--- LOCAL TEST OUTPUT ---
+test_ambiguous_put_cleans_random_remote_filename (test_smb_qualification.QualificationTests.test_ambiguous_put_cleans_random_remote_filename) ... ok
+test_both_protocols_integrity_samples_and_cleanup (test_smb_qualification.QualificationTests.test_both_protocols_integrity_samples_and_cleanup) ... ok
+test_cleanup_failure_fails_closed (test_smb_qualification.QualificationTests.test_cleanup_failure_fails_closed) ... ok
+test_cli_subprocess_produces_json (test_smb_qualification.QualificationTests.test_cli_subprocess_produces_json) ... ok
+test_detects_corrupt_readback_and_cleans_remote (test_smb_qualification.QualificationTests.test_detects_corrupt_readback_and_cleans_remote) ... ok
+test_failed_get_does_not_leave_remote_payload (test_smb_qualification.QualificationTests.test_failed_get_does_not_leave_remote_payload) ... ok
+test_hardlinked_secret_rejected (test_smb_qualification.QualificationTests.test_hardlinked_secret_rejected) ... ok
+test_private_network_requires_explicit_optin (test_smb_qualification.QualificationTests.test_private_network_requires_explicit_optin) ... ok
+test_private_report_no_overwrite (test_smb_qualification.QualificationTests.test_private_report_no_overwrite) ... ok
+test_quantile_bounds (test_smb_qualification.QualificationTests.test_quantile_bounds) ... ok
+test_rejects_network_exposure (test_smb_qualification.QualificationTests.test_rejects_network_exposure) ... ok
+test_rejects_symlink_secret_and_permissive_secret (test_smb_qualification.QualificationTests.test_rejects_symlink_secret_and_permissive_secret) ... ok
+test_rejects_unsafe_limits (test_smb_qualification.QualificationTests.test_rejects_unsafe_limits) ... ok
+test_report_path_symlink_refused (test_smb_qualification.QualificationTests.test_report_path_symlink_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 1.755s
+
+OK

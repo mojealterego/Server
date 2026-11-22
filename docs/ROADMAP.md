@@ -1,3 +1,11 @@
+# E22a — Bounded SMB2/SMB3 read-back and throughput observation (2026-11-22)
+
+- **IMPLEMENTED / TESTED_LOCAL:** opt-in native `smbclient` bounded read/write benchmark for existing signed SMB2.1 `omega-compat` and encrypted SMB3.1.1 `omega-secure`. Mandatory exact protocol request, SHA-256 read-back, unique disposable names, fail-closed cleanup, owner-private credential handling and no-overwrite 0600 evidence report. No other Samba shares or runtime configuration changes.
+- **Local evidence:** 14/14 deterministic tests PASS (controlled Bash subprocess client, **not** real SMB network); Python compile and CLI help PASS. [Runbook](E22_SMB_QUALIFICATION.md) · [test proof](../reports/e22a-verification.txt).
+- **GATE-05/07/09 BLOCKED:** live Samba packet/dialect/encryption proof, actual throughput, multichannel and durable handles, TB loads, real independent fault domains, physical S24/Windows/Linux and competitor cost comparison have **NOT_RUN**. Real E22 is not complete; local subprocess timings are not SMB throughput measurements. E21a and all previous E20a/HA gaps remain unchanged.
+
+---
+
 # E21a — Signed offline ransomware recovery authorization (2026-11-22)
 
 - **IMPLEMENTED / TESTED_LOCAL (13/13):** separate Ed25519-signed, strictly bounded single-use restore permit binding tenant, three-share SMB2/SMB3 pinned recovery set, independent E20a checkpoint tip, absolute new destination, nonce and expiration. Durable no-replay claim before remote access; uncertain restore consumes permit. Works with existing E20 verification and `storage_recovery.restore_set` stage through an opt-in offline CLI.
