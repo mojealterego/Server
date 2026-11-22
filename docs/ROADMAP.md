@@ -1,3 +1,11 @@
+# E21a — Signed offline ransomware recovery authorization (2026-11-22)
+
+- **IMPLEMENTED / TESTED_LOCAL (13/13):** separate Ed25519-signed, strictly bounded single-use restore permit binding tenant, three-share SMB2/SMB3 pinned recovery set, independent E20a checkpoint tip, absolute new destination, nonce and expiration. Durable no-replay claim before remote access; uncertain restore consumes permit. Works with existing E20 verification and `storage_recovery.restore_set` stage through an opt-in offline CLI.
+- **Evidence:** source and test SHA-256 pinned in [E21a verification](../reports/e21a-verification.txt); read [E21a runbook](E21_RANSOMWARE_RECOVERY.md). Cryptographic, file-safety and controlled-adapter tests passed locally. Full repository checkout and physical SMB/E20/cloud E2E **NOT_RUN**.
+- **BLOCKED:** WORM/independent immutable generations, real cross-host etcd fencing, hardware trust, tenant ACL/quota/key lifecycle, full ransomware drill and measured RPO/RTO. GATE-05/07/09 BLOCKED; do not advertise full E21 completion. Next E20 quorum-backed metadata and E21 physical restore qualification; E22 SMB3 performance and independent fault domain comparison remain OPEN.
+
+---
+
 # E20a — signed namespace checkpoint chain (2026-11-21)
 
 - **IMPLEMENTED, LOCALLY TESTED:** Ed25519-signed, SHA-256-chained immutable checkpoint receipts of E16 single-host SQLite namespace; externally supplied hash pin; independent signature and monotonic generation verifier; optional exact-current-state gate. Private files, no-overwrite and fsync, serialized writers.

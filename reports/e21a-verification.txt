@@ -1,0 +1,20 @@
+REQUIREMENT=E21a local offline ransomware restore authorization
+BASE_MAIN=d8e9c624af949d242b1fc1c9a69a523175073a65
+ENV=Linux x86_64, Python 3, cryptography 46.0.4, unittest; no SMB network or Docker
+COMMAND=PYTHONWARNINGS=error::ResourceWarning python -m unittest discover -s tests -p test_ransomware_recovery.py -v
+RESULT=PASS 13 tests, 0 failures, 0 errors, locally on isolated source subset
+COMMAND=python -m compileall -q atlas tests
+RESULT=PASS
+SOURCE_SHA256=e2146c3d8ef11a78110ad29a36abf429b99d9de7a5c48a1f37257988bbca3141 atlas/ransomware_recovery.py
+TEST_SHA256=428823478cc00891bad89e8155977d677a4f29a9112948cb4bc4bfafdb20d5fa tests/test_ransomware_recovery.py
+EVIDENCE=real local Ed25519 signature verification and subprocess CLI; private files, no-overwrite, replay and nonce reuse, expired/tampered/incorrect pins; fail-closed uncertain claim; controlled E20/SMB adapters
+NOT_RUN=full-repo regression; physical Samba/SMB2/SMB3; real E20 signed checkpoint with restore; provider restore; external WORM; recovery RPO/RTO; S24 Ultra; etcd quorum; deployment
+GATE_01=PASS (E21a bounded scope only)
+GATE_02=PASS (E21a offline design only)
+GATE_03=PASS (E21a local implementation only)
+GATE_04=PASS (13 focused local tests)
+GATE_05=BLOCKED (real upstream SMB/E20/provider E2E)
+GATE_06=PARTIAL (local cryptographic/invariant tests only)
+GATE_07=BLOCKED (physical failure/recovery)
+GATE_08=PASS (E21a source/test/evidence/runbook)
+GATE_09=BLOCKED (E21 full production acceptance)
