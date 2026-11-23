@@ -31,7 +31,7 @@ EVIDENCE_REPORTS = {
     'e16-e18-verification.txt', 'e19-verification.txt',
     'e19b-verification.txt', 'e20a-verification.txt', 'e20b-quorum-verification.txt',
     'e21a-verification.txt', 'e21b-tenant-verification.txt',
-    'e22a-verification.txt', 'evolution-11-verification.txt',
+    'e22a-verification.txt', 'e22b-simulation-verification.txt', 'evolution-11-verification.txt',
     'ha-storage-hardening-verification.txt', 'release-pin-verification.txt',
 }
 VPS_ALLOWED={

@@ -1,3 +1,11 @@
+# E22b — deterministyczny test awarii kanałów SMB (2026-11-23)
+
+- **IMPLEMENTED / SIMULATION_VERIFIED:** kontrolowany model kontraktu aplikacyjnego nad SMB2/SMB3: dwa niezależne kanały logiczne, ACL udziałów, odmowa SMB1, odczyt SHA-256, idempotentne powtórzenie operacji po utracie ACK, awaria przed commit, brak nadpisywania, wymuszone uszkodzenia odczytu, tryb read-only `omega-models`. Nie implementuje właściwego protokołu SMB, negocjacji multichannel, uwierzytelniania ani szyfrowania na łączu.
+- **Dowód:** 15/15 testów E22b, w tym 200 deterministycznych sekwencji usterek (seed 20261123). Zintegrowana lokalna regresja E20b+E21+E22a+E22b: **57/57 PASS × 3**; `compileall` PASS. [Kontrakt](E22_CHANNEL_SIMULATION.md) · [dowód](../reports/e22b-simulation-verification.txt).
+- **GATE-04:** PASS_SIMULATION dla E22b; **GATE-09:** nadal OPEN globalnie. Testy syntetyczne nie potwierdzają rzeczywistych SMB3 multichannel, durable handles, TLS, fizycznego WAN, transferów TB, niezależnych fault domains lub wydajności sprzętowej.
+
+---
+
 # E20b — deterministyczna symulacja quorum i fencing (2026-11-23)
 
 - **IMPLEMENTED / SIMULATION_VERIFIED:** model 3/5/7 węzłów dla kontraktu etcd v3 JSON, z majority gating, CAS, podziałami sieci, awariami hostów, zrywaniem ACK po commit, powrotem quorum, deterministycznym trace SHA-256 i testami współbieżności. Testy uruchamiają istniejące interfejsy `Authority`, `AuthorityGuard`, `GuardedCoordinator` poprzez kontrolowaną granicę RPC.

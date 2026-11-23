@@ -1,0 +1,15 @@
+OMEGA SERVER E22b CHANNEL FAULT SIMULATION — executed locally 2026-11-23 UTC
+Baseline main=ebe30a97f31d95c61308c2fd2b4ed9a74c8114a7
+Environment=Linux x86_64, CPython 3.13.5; isolated source subset, no physical SMB.
+RED=15 errors because ChannelSimulation initial constructor was not implemented (expected behavior absent).
+GREEN: PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p test_smb_channel_sim.py -v => 15/15 PASS.
+INTEGRATED: PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p 'test_*.py' -q => 57/57 PASS on each of 3 independent invocations (2.491s, 2.652s, 2.568s).
+COUNTS=13 E20b + 15 E21 + 14 E22a + 15 E22b.
+SEED=20261123; 200 deterministic fault sequences, 32 concurrent replay attempts.
+COMPILE=python3 -m compileall -q atlas tools tests => PASS.
+SRC_SHA256=6cb1a466c16763c7eda28406863cdf1d96d8b0eb09fc08610b1d9e83b8d7e6ee
+SRC_GIT_BLOB=035c15a4d7e7b77a39a869e6a16445429a6dd7bf
+TEST_SHA256=d715e335830e5c89b32ae9524ec7338158c165d5aeddc786a814e71149582c84
+TEST_GIT_BLOB=87ac7c119a3bdb891bf8dfb66548c401c59bf284
+EVENT_TRACE_SHA256=aa0144e615a469d828bc12b30ad93988fdbfaaf3a7e80bf836c8501694972805
+LIMITATIONS=No real SMB negotiation, wire signing/encryption, multichannel, physical network, durable handles, server login, cloud, E20 actual quorum, WORM or full GitHub tree CI. SIMULATION_VERIFIED only. GATE-09 global OPEN.
