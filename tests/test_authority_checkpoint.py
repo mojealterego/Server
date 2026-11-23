@@ -39,6 +39,12 @@ class CheckpointTests(unittest.TestCase):
         self.db.chmod(0o600)
     def emit(self,tip=ZERO,now=100):
         return append(self.db,self.audit,tenant='alice',key_path=self.key,expected_tip=tip,now=now)
+    def test_verified_history_reports_signed_tenant_without_database(self):
+        receipt=self.emit()
+        verified=verify(self.audit,self.pub,receipt['digest'])
+        self.assertEqual(verified['tenant'],'alice')
+        self.assertEqual(verified['status'],'CHAIN_VALID')
+
     def test_empty_chain_cannot_qualify_as_verified_recovery(self):
         with self.assertRaises(AuditError):
             verify(self.audit,self.pub,ZERO)

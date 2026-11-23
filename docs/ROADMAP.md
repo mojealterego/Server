@@ -1,3 +1,11 @@
+# E21b — signed E20 checkpoint tenant binding for SMB recovery (2026-11-23)
+
+- **IMPLEMENTED / LOCALLY TESTED:** E20 verify returns the tenant from the signed chain; E21 authorizes restore only if this tenant matches its signed recovery permit. Absent or different tenant fails closed before nonce consumption and remote I/O. No tenant ACL or real quorum claim.
+- **RED/GREEN:** 2 new E21 regression cases failed against previous code; after fix 15/15 E21 tests passed, and 14/14 E22 SMB subprocess regressions passed, with Python 3.13.5 compileall PASS. E20 real implementation regression and full repository tests are not run locally in this isolated source subset; test added in `tests/test_authority_checkpoint.py`. [Evidence](../reports/e21b-tenant-verification.txt).
+- **GATE-09 BLOCKED:** real etcd quorum, physical SMB3, independently retained WORM backups, cross-host fencing, phone/VPS and storage-fault drills remain unverified.
+
+---
+
 # E22a — Bounded SMB2/SMB3 read-back and throughput observation (2026-11-22)
 
 - **IMPLEMENTED / TESTED_LOCAL:** opt-in native `smbclient` bounded read/write benchmark for existing signed SMB2.1 `omega-compat` and encrypted SMB3.1.1 `omega-secure`. Mandatory exact protocol request, SHA-256 read-back, unique disposable names, fail-closed cleanup, owner-private credential handling and no-overwrite 0600 evidence report. No other Samba shares or runtime configuration changes.

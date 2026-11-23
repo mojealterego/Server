@@ -1,0 +1,13 @@
+OMEGA Server E21b local safety regression — 2026-11-23 UTC
+BASE_MAIN=af16ff9c32581a8bfbdead3caf472051db9ae502
+Environment=Linux x86_64; Python 3.13.5; cryptography installed; no physical Samba/etcd/cloud.
+RED: PYTHONPATH=. python3 -m unittest discover -s tests -p 'test_ransomware_recovery.py' -v
+RESULT: 15 run, 2 FAIL (test_cross_tenant_checkpoint_chain_denied_before_claim, test_missing_checkpoint_tenant_denied_before_claim), previous E21 code accepted a foreign/missing checkpoint tenant.
+GREEN: PYTHONPATH=. PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p 'test_ransomware_recovery.py' -v
+RESULT: 15 run, 0 failures/errors, PASS; E20 / SMB adapter stubs per test harness.
+REGRESSION: PYTHONPATH=. PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p 'test_smb_qualification.py' -v
+RESULT: 14 run, 0 failures/errors, PASS; controlled smbclient subprocess, not physical SMB.
+COMPILE: python3 -m compileall -q atlas tools tests; PASS (focused offline subset).
+NEW TEST: test_verified_history_reports_signed_tenant_without_database in tests/test_authority_checkpoint.py; added to repository but real E20 implementation test NOT_RUN in offline subset.
+Unverified: full GitHub repo regression, E20 real integration, quorum, distributed fencing, physical SMB, independent WORM, cloud, S24 Ultra, measured RPO/RTO.
+Status=IMPLEMENTED_LOCAL_TESTED_PARTIAL_INTEGRATION_UNVERIFIED; GATE-09=BLOCKED

@@ -40,3 +40,7 @@ Use the prior external tip for each further `append`. Before any restore or prom
 ## Deterministic evidence
 
 `PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -v` executed in a recovered E20 subset: 17 tests PASS. Included: 6 simultaneous writers, actual CLI subprocess, real Ed25519 signatures and SQLite/WAL transactions, expired/forged/changed identities, previous-tip mismatch, state drift, malformed receipt, unexpected file, symlink, byte-bound and open-FD regression. Source-local `compileall` PASS. Full repo regressions, etcd failover, cloud and SMB E2E NOT_RUN. See `reports/e20a-verification.txt`.
+
+## E21b tenant binding (2026-11-23)
+
+On successful `verify`, the response includes `tenant`, derived from the *verified and signed* checkpoint record. Empty-history opt-in used only for the initial append reports `tenant: null`; it is never an accepted restore checkpoint. Consumers authorizing tenant-scoped restore must compare this signed tenant explicitly with the recovery permit tenant, even when no current SQLite snapshot is requested. This is not an ACL or a distributed tenant authority.

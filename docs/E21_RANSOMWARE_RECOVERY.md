@@ -52,3 +52,7 @@ The private parent directories and receipt files must be owned by the runtime UI
 - Remaining E21: immutable independently retained generations, authenticated tenant ACL and quota lifecycle, key rotation, anti-ransomware filesystem integration, failover and physical restore drill with measured RPO/RTO; independent verification of real E20 quorum. Do not mark E21 full PASS.
 
 See `reports/e21a-verification.txt`, `docs/E20_AUTHORITY_CHECKPOINT.md`, `docs/STORAGE_FAILOVER.md`, and `docs/SMB_STORAGE.md`.
+
+## E21b — cross-tenant checkpoint admission hardening (2026-11-23)
+
+The restore gate now requires the E20 verified chain's **signed tenant** to equal the independently signed E21 permit tenant. Previously a cryptographically valid chain from a different tenant could satisfy the E20 tip/length checks. Missing tenant evidence also fails closed, prior to durable nonce consumption or any remote recovery. Tests explicitly demonstrate both RED cases and subsequent GREEN. This closes the local cross-tenant binding defect, **not** the separate physical SMB, WORM, quorum, RPO/RTO or GATE-09 requirements.

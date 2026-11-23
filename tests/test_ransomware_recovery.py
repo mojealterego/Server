@@ -54,7 +54,7 @@ class E21Tests(unittest.TestCase):
         return issue(self.signer_path, **settings)
 
     def admitted(self, **kw):
-        authority_verifier = kw.pop("authority_verifier", lambda *a, **k: {"digest": TIP, "length": 1})
+        authority_verifier = kw.pop("authority_verifier", lambda *a, **k: {"digest": TIP, "length": 1, "tenant": "omega"})
         settings = dict(permit=self.doc, recovery_public_key=self.public,
             authority_public_key=self.authority_public, checkpoint_dir=self.secure,
             checkpoint_tip=TIP, tenant='omega', recovery_set=self.set_doc,
@@ -92,7 +92,7 @@ class E21Tests(unittest.TestCase):
         module.validate = lambda *_: None
         module.restore_set = lambda *a, **k: (_ for _ in ()).throw(OSError('disk lost'))
         authority = types.ModuleType('atlas.authority_checkpoint')
-        authority.verify = lambda *_: {'digest': TIP, 'length': 1}
+        authority.verify = lambda *_: {'digest': TIP, 'length': 1, 'tenant': 'omega'}
         with patch.dict(sys.modules, {'atlas.storage_recovery': module,
                                       'atlas.authority_checkpoint': authority}):
             with self.assertRaisesRegex(OSError, 'disk lost'):
@@ -180,7 +180,19 @@ class E21Tests(unittest.TestCase):
 
     def test_no_unverified_chain_can_start_restore(self):
         with self.assertRaisesRegex(RecoveryDenied, 'history'):
-            self.admitted(authority_verifier=lambda *a, **k: {'digest': 'c'*64, 'length': 1})
+            self.admitted(authority_verifier=lambda *a, **k: {'digest': 'c'*64, 'length': 1, 'tenant': 'omega'})
+        self.assertEqual(list(self.claims.iterdir()), [])
+
+    def test_cross_tenant_checkpoint_chain_denied_before_claim(self):
+        with self.assertRaisesRegex(RecoveryDenied, 'tenant'):
+            self.admitted(authority_verifier=lambda *a, **k: {
+                'digest': TIP, 'length': 1, 'tenant': 'another-tenant'})
+        self.assertEqual(list(self.claims.iterdir()), [])
+
+    def test_missing_checkpoint_tenant_denied_before_claim(self):
+        with self.assertRaisesRegex(RecoveryDenied, 'tenant'):
+            self.admitted(authority_verifier=lambda *a, **k: {
+                'digest': TIP, 'length': 1})
         self.assertEqual(list(self.claims.iterdir()), [])
 
     def test_reused_nonce_on_new_signed_document_is_denied(self):

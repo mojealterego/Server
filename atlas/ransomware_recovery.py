@@ -233,6 +233,8 @@ def restore_authorized(*, permit: dict, recovery_public_key: bytes,
     chain = verify_chain(checkpoint_dir, authority_public_key, checkpoint_tip)
     require(chain['digest'] == checkpoint_tip and chain['length'] > 0,
             'No externally pinned authority history')
+    require(chain.get('tenant') == tenant,
+            'Checkpoint tenant differs from authorized recovery tenant')
     # Claim before remote I/O. There is intentionally no automatic reuse after failure.
     claim_once(claims_dir, permit_hash, permit, recovery_public_key)
     result = restore_set(recovery_set, set_sha256, dest,

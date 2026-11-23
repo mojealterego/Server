@@ -197,7 +197,8 @@ def verify(directory: Path, public_key: bytes, expected_tip: str, *,
         require(all(state[k]==last[k] for k in ('tenant','epoch','generation',
                        'entries_sha256','operations_sha256')),'Current namespace differs from signed checkpoint')
     return {'status':'MATCH' if db_path is not None else 'CHAIN_VALID',
-            'length':len(files),'digest':prior}
+            'length':len(files),'digest':prior,
+            'tenant':last['tenant'] if last is not None else None}
 
 
 def _signer(key_path: Path) -> Ed25519PrivateKey:
