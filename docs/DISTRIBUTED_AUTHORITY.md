@@ -64,3 +64,7 @@ response denies the request without deciding ownership. This latch is
 process-local; it cannot detect a rollback never observed by this process
 and does not fence in-flight side effects or survive restart. All previous
 operator fencing and latest-state requirements still apply.
+
+## E20b — deterministic quorum fault acceptance (2026-11-23)
+
+`atlas/quorum_simulation.py` simulates 3/5/7 members with majority-gated linearizable etcd v3 JSON range/txn operations, crash/recovery, network partitions, competing CAS and lost acknowledgment **after** a logical commit. It exercises the existing `Authority` / `AuthorityGuard` / `GuardedCoordinator` interfaces without a live etcd service. Run `python3 -m unittest discover -s tests -p 'test_quorum_simulation.py' -v`. The model uses a single in-memory ledger and does not model Raft, real etcd disk durability, TLS, I/O fencing or the WAN. See [contract](E20_QUORUM_SIMULATION.md), [evidence](../reports/e20b-quorum-verification.txt). Global GATE-09 remains OPEN.

@@ -1,3 +1,11 @@
+# E20b — deterministyczna symulacja quorum i fencing (2026-11-23)
+
+- **IMPLEMENTED / SIMULATION_VERIFIED:** model 3/5/7 węzłów dla kontraktu etcd v3 JSON, z majority gating, CAS, podziałami sieci, awariami hostów, zrywaniem ACK po commit, powrotem quorum, deterministycznym trace SHA-256 i testami współbieżności. Testy uruchamiają istniejące interfejsy `Authority`, `AuthorityGuard`, `GuardedCoordinator` poprzez kontrolowaną granicę RPC.
+- **Testy:** E20b 13/13 PASS; 27 kombinacji stanów 3 węzłów wewnątrz testu wyczerpującego. Łącznie E20/E21/E22: **42/42 PASS × 3**, `compileall` PASS, na izolowanym podzbiorze źródeł. [Kontrakt](E20_QUORUM_SIMULATION.md) · [dowód](../reports/e20b-quorum-verification.txt).
+- **GATE-04:** PASS_SIMULATION w zakresie E20b; GATE-05 SIMULATION_VERIFIED_PARTIAL; GATE-09 OPEN dla Servera. Fizyczny Raft/etcd, TLS/mTLS, trwałość zapisu węzłów, WORM, S24/VPS i sprzętowe E2E NIE zostały uruchomione. Symulator nie zastępuje realnego etcd.
+
+---
+
 # RELEASE-01 — source-pinned verification and package evidence (2026-11-23)
 
 - **IMPLEMENTED / TESTED_LOCAL:** Source SHA-256 digest and file count now bind a verification report to its allowlisted code, docs and evidence. `package.py` rejects stale/missing pins even under `--skip-verify`, checking before/after ZIP creation. Recent E16–E22 evidence reports are explicitly allowlisted.

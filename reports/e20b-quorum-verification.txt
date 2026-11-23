@@ -1,0 +1,12 @@
+OMEGA SERVER E20b QUORUM SIMULATION — local execution 2026-11-23 UTC
+Base main: 8a5fc9af9f9f3724e5d8f08a78aab68b82fac569
+Environment: Linux x86_64 CPython 3.13.5; isolated source subset, no real etcd/Samba/VPS.
+TDD RED: missing quorum-model behavior; stub constructor raised NotImplementedError in 13 cases.
+GREEN: PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p test_quorum_simulation.py -v => 13/13 PASS.
+REGRESSIONS: PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -p 'test_*.py' -q => 42/42 PASS x3, 2.712s / 2.630s / 2.407s.
+Counts: E20b 13, E21 recovery 15, E22 SMB subprocess fixture 14.
+COMPILE: python3 -m compileall -q atlas tools tests => PASS.
+New source SHA256: 1b67f84cb018930924ea73ee6dc4c9e3e05e471a56373a8ad4bb12585d3ce1cd; Git blob 1bb00aefab18c925721b5e154452e65367f46b77.
+New test SHA256: 6c76754dd154755f663df6120b24f7451b57b271810f369bab51e3c6303a9b5a; Git blob 147996b944a3cf5197b20108a2157e36a641cf04.
+3-node exhaustive states: 27. Fixed sequential trace SHA256: 52bef993ba9210c1c6c5a15325d77ef2b04b80858db307cce8094aa4674b5769.
+The local Authority implementation is a mirror, not byte-for-byte GitHub source. Full repository and production/physical/etcd/Raft/TLS/SMB/WORM/Android/cloud E2E NOT_RUN; GATE-09 globally OPEN.
