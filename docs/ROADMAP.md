@@ -1,3 +1,11 @@
+# RELEASE-01 — source-pinned verification and package evidence (2026-11-23)
+
+- **IMPLEMENTED / TESTED_LOCAL:** Source SHA-256 digest and file count now bind a verification report to its allowlisted code, docs and evidence. `package.py` rejects stale/missing pins even under `--skip-verify`, checking before/after ZIP creation. Recent E16–E22 evidence reports are explicitly allowlisted.
+- **TDD:** Three previously failing package tests turn green; nine fingerprint tests and four package tests PASS, plus 29 existing E21/E22 regressions (42 selected cases). [Runbook](RELEASE_INTEGRITY.md) · [evidence](../reports/release-pin-verification.txt).
+- **GATE-09 BLOCKED:** Full-repository suite, real etcd quorum, SMB physical interoperability, independent WORM, cloud, S24 Ultra, signed release attestation and physical recovery qualification remain unverified.
+
+---
+
 # E21b — signed E20 checkpoint tenant binding for SMB recovery (2026-11-23)
 
 - **IMPLEMENTED / LOCALLY TESTED:** E20 verify returns the tenant from the signed chain; E21 authorizes restore only if this tenant matches its signed recovery permit. Absent or different tenant fails closed before nonce consumption and remote I/O. No tenant ACL or real quorum claim.

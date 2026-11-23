@@ -65,12 +65,22 @@ def main():
                              'Wan_LTX_actual_inference':'NOT_RUN','cloud_real_transfer':'NOT_RUN'},
         'test_limits':'PHASECHAT runs a real local HTTP test server and child processes but no actual AI weights. SupervisedExecutor runs real local subprocesses and CAS writes, but not AI models or a sandbox. Runtime RAM reservation is declarative, single-host SQLite only. PHASESHIFT certifies only declared resources and restart scenarios. SQLite lease is single-host only. Synthetic benchmark is not GPU/energy/latency evidence. Rclone and sd-cli tests use controlled subprocess doubles. No real S24/VPS/GPU/cloud E2E.'
     }
-    (REPORTS/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     (REPORTS/'green-mobile.txt').write_text('STATUS=NOT_RUN_ON_S24_ULTRA\nNO_REAL_MOBILE_E2E_EVIDENCE\nLOCAL_SIMULATIONS_IN=verification.json\n',encoding='utf-8')
     (REPORTS/'verification.txt').write_text(
         f"LOCAL_UNIT_TESTS={result.testsRun}\nLOCAL_FAILURES={len(result.failures)+len(result.errors)}\n"
         f"LOCAL_STATUS={'PASS' if ok else 'FAIL'}\nMOBILE_STATUS=NOT_RUN\nVPS_RUNTIME_STATUS=NOT_RUN\n",encoding='utf-8')
     (REPORTS/'red.txt').write_text('LOCAL_FAILURES=%d\n' % (len(result.failures)+len(result.errors)),encoding='utf-8')
+    # The verification report must be written LAST: hash post-test inputs.
+    # Exclude the verification JSON itself to avoid a self-referential digest.
+    try:
+        from tools.package import source_tree_digest
+        report['local']['verified_sources'] = source_tree_digest(ROOT)
+    except (OSError, ValueError) as exc:
+        report['local']['status'] = 'FAIL'
+        report['local']['source_pin_error'] = str(exc)
+        ok = False
+    (REPORTS/'verification.json').write_text(
+        json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(f"OMEGA-X v4.3 host verification: {'PASS' if ok else 'FAIL'}; tests={result.testsRun}; mobile=NOT_RUN; Docker runtime=NOT_RUN")
     return 0 if ok else 1
 

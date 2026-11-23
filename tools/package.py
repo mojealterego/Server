@@ -15,11 +15,24 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 OUTPUT=ROOT.parent/(ROOT.name+'.zip')
+sys.path.insert(0, str(ROOT))
+from tools.release_fingerprint import FingerprintError, fingerprint, verify_pin
 ALLOWED_TOP={'README.md','.gitignore'}
 ALLOWED_DIRS={
     'cloud':{'.sh'}, 'docs':{'.md'}, 'reports':{'.txt','.json'},
     'samples':{'.onnx'}, 'termux':{'.py','.sh'}, 'tests':{'.py'},
     'tools':{'.py','.sh'}, 'atlas':{'.py'}, 'catalog':{'.json'}, 'examples':{'.json'},
+}
+EVIDENCE_REPORTS = {
+    'verification.json', 'verification.txt', 'unittest.txt', 'green-mobile.txt',
+    'red.txt', 'phaseshift_benchmark.json',
+    'adaptive-polling-storage-verification.txt',
+    'compute-v5.4b-storage06-verification.txt',
+    'e16-e18-verification.txt', 'e19-verification.txt',
+    'e19b-verification.txt', 'e20a-verification.txt',
+    'e21a-verification.txt', 'e21b-tenant-verification.txt',
+    'e22a-verification.txt', 'evolution-11-verification.txt',
+    'ha-storage-hardening-verification.txt', 'release-pin-verification.txt',
 }
 VPS_ALLOWED={
     'compose.yaml','.dockerignore','init.sh','media_worker.py',
@@ -42,9 +55,24 @@ def allowed(path:Path)->bool:
         return False
     if rel.parts[0]=='tests' and not rel.name.startswith('test_'):
         return False
-    if rel.parts[0]=='reports' and rel.name not in {'verification.json','verification.txt','unittest.txt','green-mobile.txt','red.txt','phaseshift_benchmark.json'}:
+    if rel.parts[0]=='reports' and rel.name not in EVIDENCE_REPORTS:
         return False
     return True
+
+
+def source_tree_digest(root:Path)->dict:
+    """Fingerprint explicit bundle inputs, excluding self-referential report."""
+    return fingerprint(root, lambda path: allowed(path) and
+                       path != root/'reports/verification.json')
+
+
+def _require_verified_sources(checks:dict)->None:
+    try:
+        verify_pin(ROOT, lambda path: allowed(path) and
+                   path != ROOT/'reports/verification.json',
+                   checks.get('verified_sources'))
+    except FingerprintError as exc:
+        raise SystemExit('Source verification pin missing or changed; rerun full verification') from exc
 
 
 def main(argv=None)->int:
@@ -59,6 +87,7 @@ def main(argv=None)->int:
     if not (checks.get('status')=='PASS' and suite.get('executed',0)>0 and
             suite.get('failures')==0 and suite.get('errors')==0 and suite.get('skipped')==0):
         raise SystemExit('Refusing to package failed, missing or skipped local tests')
+    _require_verified_sources(checks)
     files=sorted((x for x in ROOT.rglob('*') if allowed(x)),key=lambda x:x.relative_to(ROOT).as_posix())
     sums=[f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(ROOT).as_posix()}' for path in files]
     manifest=ROOT/'SHA256SUMS'
@@ -80,6 +109,7 @@ def main(argv=None)->int:
             digest,rel=entry.split('  ',1)
             if hashlib.sha256(z.read(members[rel])).hexdigest()!=digest:
                 raise RuntimeError('ZIP SHA-256 verification failed: '+rel)
+    _require_verified_sources(checks)  # Guard post-archiving source drift.
     print('ZIP:',OUTPUT)
     print('FILES:',len(files))
     print('SIZE:',OUTPUT.stat().st_size)

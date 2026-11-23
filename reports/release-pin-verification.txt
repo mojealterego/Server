@@ -1,0 +1,9 @@
+OMEGA Server RELEASE-01 evidence — 2026-11-23 UTC
+BASE_MAIN=89e7103fcab2e32fe6359ddd4bfc013a58f4ed4c
+Host=Linux x86_64, CPython 3.13.5; focused source subset at /mnt/data/server_work.
+RED: PYTHONPATH=. python3 -m unittest discover -s tests -p test_package_release_pin.py -v
+Outcome: four tests run, three FAIL: stale PASS accepted modified code, missing pin accepted, approved E21b proof excluded from ZIP.
+GREEN after changes: test_release_fingerprint.py 9 PASS; test_package_release_pin.py 4 PASS (real temporary ZIP production, deterministic repeat, allowlist); combined focused test_*.py 42 PASS (15 E21, 14 SMB E22, 9 fingerprint, 4 package).
+COMPILE: python3 -m compileall -q tools tests => PASS (focused subset).
+tools/package.py baseline source SHA256 verified against GitHub SHA256SUMS ae7076fd6c80cb730f65290f4e0c6e29a0eacc2c21aa82993a2df677d9ab4344.
+Integration of revised tools/verify.py, entire GitHub repository tests, Docker/Samba/etcd/WORM/cloud/Android E2E: NOT_RUN. Gate-09 remains BLOCKED. Local digest is not a signature.
